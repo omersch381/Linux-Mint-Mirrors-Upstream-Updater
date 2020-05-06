@@ -37,7 +37,7 @@ create_log(){
     # variables
     FILE_FULL_PATH=$0
     FILE_BASE_NAME=$(basename -- "$FILE_FULL_PATH")
-    DIR_PATH="${FILE_FULL_PATH/$FILE_BASE_NAME/}" # just the file full path without the file_basename
+    DIR_PATH="$(dirname "$(realpath "$0")")" # just the file full path without the file_basename
     TIMESTAMP_WITHOUT_HOUR=$(date | awk '{print $1 "_" $2 "_" $3 "_" $6}')
     TIMESTAMP_WITH_HOUR=$(date | awk '{print $1 "_" $2 "_" $3 "_" $4 "_" $6}')
     LOG_NAME="$FILE_BASE_NAME"_"$TIMESTAMP_WITHOUT_HOUR"
@@ -52,7 +52,7 @@ run_python_file(){
     # This method runs the python file - it will save to a file the recent mirrors list
     
     # Variables
-    MIRRORS_FINDER_ERROR_MSG="Error! Could Not Find Mirrors!"
+    MIRRORS_FINDER_ERROR_MSG="Error! Mirrors Finder Failed!"
     MIRRORS_FINDER_SUCCES_MSG="Mirrors Were Found Successfully!"
     PYTHON_FILE_PATH="$DIR_PATH/LinuxMintMirrosFinder.py"
     
@@ -61,6 +61,7 @@ run_python_file(){
     if ! python3 "$PYTHON_FILE_PATH"; then echo "$MIRRORS_FINDER_ERROR_MSG"
     else Log "$MIRRORS_FINDER_SUCCES_MSG"
     fi
+    if [[ ! -f "$DIR_PATH/mirrors_list" ]]; then cp mirrors_list "$DIR_PATH/mirrors_list"; fi
 }
 
 find_the_nearest_mirror(){
@@ -103,15 +104,15 @@ create_a_source_backup(){
     # This function creates a source backup.
     
     # Messages and Variables
-    BACKUP_SOURCE_ERROR_MSG="Error! A Source Backup Was Not Created Successfully!"
+    BACKUP_SOURCE_ERROR_MSG="Error! A Source Backup Was Failed!"
     BACKUP_SOURCE_SUCCESS_MSG="A Source Backup Was Created Successfully!"
     SOURCES_PATH="/etc/apt/sources.list.d/official-package-repositories.list"
     
     # Handle the backup
     echo "Creating a Mirrors Source Backup..."
     Log "Creating a Mirrors Source Backup..."
-    if ! cp "$SOURCES_PATH" "$SOURCES_PATH.bak"; then
-        LOG "$BACKUP_SOURCE_ERROR_MSG"
+    if ! sudo cp "$SOURCES_PATH" "$SOURCES_PATH.bak"; then
+        Log "$BACKUP_SOURCE_ERROR_MSG"
         echo "$BACKUP_SOURCE_ERROR_MSG"
         exit 1
     fi
@@ -124,7 +125,7 @@ switch_it(){
     # Variables
     SOURCES_PATH="/etc/apt/sources.list.d/official-package-repositories.list"
     CHANGED_SUCCESSFULLY_MSG="Mirror Was Changed Succesfully!"
-    CHANGED_FAILED_MSG="Mirror Was NOT Changed!! Reverting The Sources File..."
+    CHANGED_FAILED_MSG="Mirror Was Failed and therefore NOT Changed!! Reverting The Sources File..."
     
     # Creates a new line with the new mirror's URL
     NEW_UPDATED_MIRROR_LINE=$(awk -v nearest="$NEAREST_MIRROR_FULL_PATH" '/main upstream import backport/ { $2 = nearest;printf("%s\n", $0)}' $SOURCES_PATH)
