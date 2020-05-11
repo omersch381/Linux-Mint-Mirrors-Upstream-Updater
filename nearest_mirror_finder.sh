@@ -5,6 +5,9 @@
 
 
 main(){
+    # Requiring sudo permissions
+    run_with_sudo_premissions
+    
     # Handling Log's creation
     create_log
     
@@ -15,13 +18,13 @@ main(){
     find_the_nearest_mirror
     
     # Creating a Mirrors Source Backup
-    create_a_source_backup
+    create_a_source_backup 2> "$LOG_PATH"
     
     # Switching The Existing Source File
-    switch_it
+    switch_it 2> "$LOG_PATH"
     
     # Making sure everything is ok - if not it will be reverted
-    revert_if_update_is_not_ok
+    revert_if_update_is_not_ok 2> "$LOG_PATH"
     
     # If everything works - we will delclare it to the user! (if something was wrong
     # by now, the method would have exited in each critical step before).
@@ -31,13 +34,19 @@ main(){
 
 # Functions
 
+run_with_sudo_premissions(){
+    # When this method is run with the sudo crontab - it has sudo permissions, but when it runs manually,
+    # it needs the sudo
+    if [[ $UID != 0 ]]; then sudo "$0"; exit 1; fi
+}
+
 create_log(){
     # This method handles all Log's creation.
     
     # variables
     FILE_FULL_PATH=$0
     FILE_BASE_NAME=$(basename -- "$FILE_FULL_PATH")
-    DIR_PATH="$(dirname "$(realpath "$0")")" # just the file full path without the file_basename
+    DIR_PATH="$(dirname "$(realpath "$0")")"
     TIMESTAMP_WITHOUT_HOUR=$(date | awk '{print $1 "_" $2 "_" $3 "_" $6}')
     TIMESTAMP_WITH_HOUR=$(date | awk '{print $1 "_" $2 "_" $3 "_" $4 "_" $6}')
     LOG_NAME="$FILE_BASE_NAME"_"$TIMESTAMP_WITHOUT_HOUR"
@@ -61,6 +70,9 @@ run_python_file(){
     if ! python3 "$PYTHON_FILE_PATH"; then echo "$MIRRORS_FINDER_ERROR_MSG"
     else Log "$MIRRORS_FINDER_SUCCES_MSG"
     fi
+    
+    # Sometimes the script is run from a different directory - therefore the mirrors_list file
+    # is created in a different directory. On these case we will copy it to the script's original directory.
     if [[ ! -f "$DIR_PATH/mirrors_list" ]]; then cp mirrors_list "$DIR_PATH/mirrors_list"; fi
 }
 
@@ -126,15 +138,23 @@ switch_it(){
     SOURCES_PATH="/etc/apt/sources.list.d/official-package-repositories.list"
     CHANGED_SUCCESSFULLY_MSG="Mirror Was Changed Succesfully!"
     CHANGED_FAILED_MSG="Mirror Was Failed and therefore NOT Changed!! Reverting The Sources File..."
+    SWITCHING_FAILED_MSG="Switching the source on the source file was Failed!"
+    REPLACING_FAILED_MSG="Replacing the original source file with the new (created) one Failed"
     
     # Creates a new line with the new mirror's URL
     NEW_UPDATED_MIRROR_LINE=$(awk -v nearest="$NEAREST_MIRROR_FULL_PATH" '/main upstream import backport/ { $2 = nearest;printf("%s\n", $0)}' $SOURCES_PATH)
     
     # Saves the changes to a file
-    sed "1 s~.*~${NEW_UPDATED_MIRROR_LINE}~" "$SOURCES_PATH" > temp_file
-    FIRST_COMMAND="$?"
-    mv temp_file "$SOURCES_PATH" # Changes the original file
-    SECOND_COMMAND="$?"
+    if ! sed "1 s~.*~${NEW_UPDATED_MIRROR_LINE}~" "$SOURCES_PATH" > temp_file; then
+        echo "$SWITCHING_FAILED_MSG"
+        FIRST_COMMAND="$?"
+    fi
+    
+    # Changes the original file
+    if ! mv temp_file "$SOURCES_PATH" ; then
+        echo "$REPLACING_FAILED_MSG"
+        SECOND_COMMAND="$?"
+    fi
     
     if (( ! "$FIRST_COMMAND" + "$SECOND_COMMAND" == 0)); then
         echo "$CHANGED_FAILED_MSG"
@@ -149,10 +169,12 @@ switch_it(){
 
 revert_if_update_is_not_ok(){
     # This method checks that an update is ok to be made - if not it reverts it.
-    if ! apt update -y && apt upgrade -y > "$LOG_PATH" 2>&1; then
+    SOURCES_PATH="/etc/apt/sources.list.d/official-package-repositories.list"
+    CHANGED_FAILED_MSG="Mirror Was Failed and therefore NOT Changed!! Reverting The Sources File..."
+    if ! sudo apt update; then
         echo "$CHANGED_FAILED_MSG"
         Log "From revert_if_not_ok method: $CHANGED_FAILED_MSG"
-        mv "$SOURCES_PATH.bak" "$SOURCES_PATH"
+        sudo mv "$SOURCES_PATH.bak" "$SOURCES_PATH"
         exit 1
     else
         Log "From revert_if_not_ok method: $CHANGED_SUCCESSFULLY_MSG"
