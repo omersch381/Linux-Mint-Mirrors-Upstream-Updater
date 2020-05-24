@@ -12,7 +12,7 @@ DIR_PATH="$(dirname "$(realpath "$0")")"
 LOG_PATH="$DIR_PATH/$LOG_NAME"
 
 # Deleting the last run's logs
-sudo find "$DIR_PATH" -name "near.*20*"  -exec rm "{}" \;
+sudo find "$DIR_PATH" -name "near*20*"  -exec rm "{}" \;
 
 # Running the script
 sudo bash "$DIR_PATH/nearest_mirror_finder.sh"

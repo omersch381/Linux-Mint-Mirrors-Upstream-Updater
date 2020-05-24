@@ -44,8 +44,7 @@ create_log(){
     # This method handles all Log's creation.
     
     # variables
-    FILE_FULL_PATH=$0
-    FILE_BASE_NAME=$(basename -- "$FILE_FULL_PATH")
+    FILE_BASE_NAME=$(basename -- "$0")
     DIR_PATH="$(dirname "$(realpath "$0")")"
     TIMESTAMP_WITHOUT_HOUR=$(date | awk '{print $1 "_" $2 "_" $3 "_" $6}')
     TIMESTAMP_WITH_HOUR=$(date | awk '{print $1 "_" $2 "_" $3 "_" $4 "_" $6}')
@@ -64,10 +63,11 @@ run_python_file(){
     MIRRORS_FINDER_ERROR_MSG="Error! Mirrors Finder Failed!"
     MIRRORS_FINDER_SUCCES_MSG="Mirrors Were Found Successfully!"
     PYTHON_FILE_PATH="$DIR_PATH/LinuxMintMirrosFinder.py"
-    
+    MIRRORS_URL="https://www.linuxmint.com/mirrors.php"
+
     echo "Finding Recent Mirrors..."
     Log "Finding Recent Mirrors..."
-    if ! python3 "$PYTHON_FILE_PATH"; then echo "$MIRRORS_FINDER_ERROR_MSG"
+    if ! python3 "$PYTHON_FILE_PATH" "$MIRRORS_URL"; then echo "$MIRRORS_FINDER_ERROR_MSG"
     else Log "$MIRRORS_FINDER_SUCCES_MSG"
     fi
     
