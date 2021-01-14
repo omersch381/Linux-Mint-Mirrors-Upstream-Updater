@@ -1,0 +1,5 @@
+
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+W: Failed to fetch https://fourdots.com/mirror/LinuxMint/packages/dists/ulyana/InRelease  503  Service Temporarily Unavailable [IP: 104.26.11.238 443]
+W: Some index files failed to download. They have been ignored, or old ones used instead.

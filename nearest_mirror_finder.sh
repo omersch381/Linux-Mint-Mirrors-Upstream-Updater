@@ -18,13 +18,13 @@ main(){
     find_the_nearest_mirror
     
     # Creating a Mirrors Source Backup
-    create_a_source_backup 2> "$LOG_PATH"
+    create_a_source_backup 2>> "$LOG_PATH"
     
     # Switching The Existing Source File
-    switch_it 2> "$LOG_PATH"
+    switch_it 2>> "$LOG_PATH"
     
     # Making sure everything is ok - if not it will be reverted
-    revert_if_update_is_not_ok 2> "$LOG_PATH"
+    revert_if_update_is_not_ok 2>> "$LOG_PATH"
     
     # If everything works - we will delclare it to the user! (if something was wrong
     # by now, the method would have exited in each critical step before).
@@ -109,7 +109,7 @@ find_the_nearest_mirror(){
     
     # Cleaning Temp Files
     rm "$TEMP_LOG_FILE"
-    rm "$DIR_PATH/mirrors_list"
+    # rm "$DIR_PATH/mirrors_list"
 }
 
 create_a_source_backup(){
@@ -171,13 +171,17 @@ revert_if_update_is_not_ok(){
     # This method checks that an update is ok to be made - if not it reverts it.
     SOURCES_PATH="/etc/apt/sources.list.d/official-package-repositories.list"
     CHANGED_FAILED_MSG="Mirror Was Failed and therefore NOT Changed!! Reverting The Sources File..."
-    if ! sudo apt update; then
+    
+    sudo apt update 2>> temp_err_msg.txt
+    if test -f "temp_err_msg.txt"; then
+        rm temp_err_msg.txt
         echo "$CHANGED_FAILED_MSG"
         Log "From revert_if_not_ok method: $CHANGED_FAILED_MSG"
         sudo mv "$SOURCES_PATH.bak" "$SOURCES_PATH"
         exit 1
     else
         Log "From revert_if_not_ok method: $CHANGED_SUCCESSFULLY_MSG"
+        
     fi
 }
 
