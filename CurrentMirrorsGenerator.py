@@ -1,10 +1,22 @@
-class CurrentMirrorsGenerator:  
+class CurrentMirrorsGenerator:
+    """This class parses the mirrors.
+
+    It receives an HTML string with the mirrors
+    is in the next format:
+    'http://mirror.wiru.co.za/linuxmint-packages/\n'
+
+    and it parses the list so each mirror would be in the next format:
+    'mirror.wiru.co.za'
+
+    (a pingable format).
+    """
+
     def __init__(self, list_of_objects):
         self.mirrors_starting_index = -1
         self.mirrors_ending_index = -1
         self.list_of_objects = list_of_objects
 
-    def general_function(self):
+    def parse_mirrors(self):
         self.mirrors_starting_index, self.mirrors_ending_index = self.get_mirrors_indices(self.list_of_objects)
         mirrors_general_list = self.list_of_objects[self.mirrors_starting_index:self.mirrors_ending_index]
         list_of_mirror_elements = []
@@ -24,10 +36,9 @@ class CurrentMirrorsGenerator:
                 ending_index = given_list.index(current_object)
         return starting_index, ending_index
 
-    def get_list_of_mirrors(self,given_list):
+    def get_list_of_mirrors(self, given_list):
         list_of_mirror_urls = []
         for i, element in enumerate(given_list):
             if i % 2 == 1:  # Each odd index has the mirror's url of the index before it
                 list_of_mirror_urls.append(element.text)
         return list_of_mirror_urls
-

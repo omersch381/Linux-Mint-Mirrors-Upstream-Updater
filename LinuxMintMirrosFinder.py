@@ -6,6 +6,11 @@ from ArgParser import ArgParser
 
 
 def write_final_list_to_file(given_list_of_mirrors):
+    """This method writes the final and sorted fastest mirrors to a file.
+
+    :param given_list_of_mirrors: The sorted mirrors that we have found.
+    """
+
     with open('mirrors_list', 'w') as file_handler:
         for mirror in given_list_of_mirrors:
             file_handler.write('%s\n' % mirror)
@@ -22,12 +27,21 @@ def generate_final_list(list_of_mirrors, list_of_mirrors_from_last_run):
     # TODO: continue the method - mirrors blacklist, which will be cleared once in every 50 runs
 
 
-args = ArgParser().parse_args()
-html_content = request.urlopen(args.url)
+# args = ArgParser().parse_args()
+# html_content = request.urlopen(args.url)
+
+# For testing only. In any other case, just comment the next 2 lines
+# and uncomment the previous 2 lines.
+url = 'https://www.linuxmint.com/mirrors.php'
+html_content = request.urlopen(url)
+
 soup = BeautifulSoup(html_content, 'html.parser')
+
 list_of_objects = soup.find_all()
 
-current_list_of_mirrors = CurrentMirrorsGenerator().general_function(list_of_objects)
+# Each object contains a long string which contains the mirror
+linux_mint_mirrors_parser = CurrentMirrorsGenerator(list_of_objects)
+current_list_of_mirrors = linux_mint_mirrors_parser.parse_mirrors()
 
 list_of_mirrors_from_last_run = LastRunMirrors().get_list_of_mirrors()
 

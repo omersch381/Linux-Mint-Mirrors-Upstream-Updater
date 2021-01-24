@@ -2,11 +2,20 @@ import glob
 
 
 class LastRunMirrors:
+
+    """This class parses the last run's mirrors and uses them for the required operations.
+
+    E.g. sorts them and divide the slowest of them in the blacklist.
+    E.g. uses/sets the closest mirrors as cache.
+    It has a variable: black_list_threshold, where every <threshold> times the cache
+    and the blacklist are being reset.
+    """
+
     def __init__(self):
         self._black_list_threshold = 20
 
     def get_list_of_mirrors(self):
-        # If black_list_iteration is less than the black_list_threashold, then we keep our cache.
+        # If black_list_iteration is less than the black_list_threshold, then we keep our cache.
         # Else, we will delete the cache.
         black_list_iteration, black_list = self.handle_black_list()
 
