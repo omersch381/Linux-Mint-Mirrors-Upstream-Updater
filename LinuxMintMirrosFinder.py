@@ -1,8 +1,9 @@
+import re
+
 from LastRunMirrors import LastRunMirrors
 from CurrentMirrorsGenerator import CurrentMirrorsGenerator
-from bs4 import BeautifulSoup
-import urllib.request as request
 from ArgParser import ArgParser
+from MintParser import MintParser
 
 
 def write_final_list_to_file(given_list_of_mirrors):
@@ -28,23 +29,22 @@ def generate_final_list(list_of_mirrors, list_of_mirrors_from_last_run):
 
 
 # args = ArgParser().parse_args()
-# html_content = request.urlopen(args.url)
+# mint_parser = MintParser(url=args.url)
 
 # For testing only. In any other case, just comment the next 2 lines
 # and uncomment the previous 2 lines.
 url = 'https://www.linuxmint.com/mirrors.php'
-html_content = request.urlopen(url)
+mint_parser = MintParser(url=url)
 
-soup = BeautifulSoup(html_content, 'html.parser')
+list_of_mirrors = mint_parser.parse_mirrors()
+print(list_of_mirrors)
 
-list_of_objects = soup.find_all()
-
-# Each object contains a long string which contains the mirror
-linux_mint_mirrors_parser = CurrentMirrorsGenerator(list_of_objects)
-current_list_of_mirrors = linux_mint_mirrors_parser.parse_mirrors()
-
-list_of_mirrors_from_last_run = LastRunMirrors().get_list_of_mirrors()
-
-final_list = generate_final_list(current_list_of_mirrors, list_of_mirrors_from_last_run)
-
-write_final_list_to_file(final_list)
+# # Each object contains a long string which contains the mirror
+# linux_mint_mirrors_parser = CurrentMirrorsGenerator(list_of_objects)
+# current_list_of_mirrors = linux_mint_mirrors_parser.parse_mirrors()
+#
+# list_of_mirrors_from_last_run = LastRunMirrors().get_list_of_mirrors()
+#
+# final_list = generate_final_list(current_list_of_mirrors, list_of_mirrors_from_last_run)
+# 
+# write_final_list_to_file(final_list)
