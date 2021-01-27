@@ -21,10 +21,11 @@ def write_mirrors_list_to_file(given_list_of_mirrors):
 url = 'https://www.linuxmint.com/mirrors.php'
 parser = MintParser(url=url)
 
-list_of_mirrors = parser.parse_mirrors()
+# list_of_mirrors = parser.parse_mirrors()
 
-pinger = FastestMirrors(list_of_mirrors)
-sorted_mirrors = pinger.sorted_mirrors
+# pinger = FastestMirrors(list_of_mirrors)
+# sorted_mirrors = pinger.sorted_mirrors
 
-write_mirrors_list_to_file(sorted_mirrors)
+# write_mirrors_list_to_file(sorted_mirrors)
 
+parser.switch_to_fastest_mirror('mirrors.evowise.com')
