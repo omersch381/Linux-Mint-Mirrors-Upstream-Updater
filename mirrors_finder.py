@@ -28,4 +28,7 @@ parser = MintParser(url=url)
 
 # write_mirrors_list_to_file(sorted_mirrors)
 
-parser.switch_to_fastest_mirror('mirrors.evowise.com')
+parser.switch_to_fastest_mirror(
+    upstream_package_file_path='/etc/apt/sources.list.d/official-package-repositories.list',
+    mirror='mirrors.evowise.com')
+

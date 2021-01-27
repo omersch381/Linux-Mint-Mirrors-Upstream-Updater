@@ -1,5 +1,7 @@
 import urllib.request as request
 from bs4 import BeautifulSoup
+from shutil import copyfile
+import re
 
 
 class MintParser:
@@ -28,14 +30,24 @@ class MintParser:
         return [str(html_object).split('/')[2] for html_object in list_of_objects]
 
     def switch_to_fastest_mirror(self, upstream_package_file_path, mirror):
-        with open(upstream_package_file_path, 'r') as file_handler:
-            upstream_packages_file = file_handler.readlines()
+        # Saving a backup of the configuration file
+        copyfile(upstream_package_file_path, upstream_package_file_path + '.bak')
 
-        for i in range(len(upstream_packages_file)):
-            if 'upstream import backport' in upstream_packages_file[i]:
-                line = upstream_packages_file[i].split()
-                for j in range(len(line)):
-                    if 'http' in line[j]:
-                        line[j] = 'http://' + mirror
-        print(upstream_packages_file)
 
+        with open(upstream_package_file_path, 'r') as file :
+          filedata = file.read()
+        
+        with open(upstream_package_file_path, 'w') as file:
+            for line in filedata.splitlines():
+                if 'upstream import backport' in line:
+                    words = line.split()
+                    old_mirror = ''
+                    for word in words:
+                        if 'http' in word:
+                            old_mirror = word
+                    mirror = 'http://' + mirror
+                    line = line.replace(old_mirror, mirror) + '\n'
+                    file.write(line)
+                    continue
+                line += '\n'
+                file.write(line)
