@@ -1,5 +1,6 @@
 from arg_parser import ArgParser
 from mint_parser import MintParser
+from best_mirrors import FastestMirrors
 
 
 def write_mirrors_list_to_file(given_list_of_mirrors):
@@ -13,6 +14,11 @@ def write_mirrors_list_to_file(given_list_of_mirrors):
             file_handler.write('%s\n' % mirror)
 
 
+def get_less_mirrors():
+    with open('small_mirror_list', 'r') as file_handler:
+        mirrors = file_handler.readlines()
+        return mirrors
+
 # args = ArgParser().parse_args()
 # mint_parser = MintParser(url=args.url)
 
@@ -21,5 +27,13 @@ def write_mirrors_list_to_file(given_list_of_mirrors):
 url = 'https://www.linuxmint.com/mirrors.php'
 parser = MintParser(url=url)
 
-list_of_mirrors = parser.parse_mirrors()
-print(list_of_mirrors)
+#list_of_mirrors = parser.parse_mirrors()
+
+list_of_mirrors = get_less_mirrors()
+
+pinger = FastestMirrors(list_of_mirrors)
+sorted_mirrors = pinger.sorted_mirrors
+
+print(sorted_mirrors)
+
+write_mirrors_list_to_file(sorted_mirrors)
