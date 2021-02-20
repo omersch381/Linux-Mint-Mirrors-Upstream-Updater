@@ -1,7 +1,7 @@
 import urllib.request as request
-from bs4 import BeautifulSoup
 from shutil import copyfile
-import re
+
+from bs4 import BeautifulSoup
 
 
 class MintParser:
@@ -33,10 +33,9 @@ class MintParser:
         # Saving a backup of the configuration file
         copyfile(upstream_package_file_path, upstream_package_file_path + '.bak')
 
+        with open(upstream_package_file_path, 'r') as file:
+            filedata = file.read()
 
-        with open(upstream_package_file_path, 'r') as file :
-          filedata = file.read()
-        
         with open(upstream_package_file_path, 'w') as file:
             for line in filedata.splitlines():
                 if 'upstream import backport' in line:

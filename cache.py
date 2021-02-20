@@ -7,12 +7,11 @@ class CacheManager(object):
 
     Saves the data mirrors on the file as a json string.
     """
-    def __init__(self, fastest_mirrors, cache_size=20):
-        self._fastest_mirrors = fastest_mirrors
+
+    def __init__(self, cache_size=20):
         self._cache_size = cache_size
-        self._cache_mirrors = {
-            mirror: time for (mirror, time), _ in zip(self._fastest_mirrors.items(), range(self._cache_size))
-        }
+        self._cache_mirrors = None
+        self._cache_file_name = 'cached_mirrors'
 
     @property
     def cache_mirrors(self):
@@ -22,20 +21,24 @@ class CacheManager(object):
     def cache_mirrors(self, cache_mirrors):
         self._cache_mirrors = cache_mirrors
 
+    def set_cached_mirrors_from_list(self, fastest_mirrors):
+        self._cache_mirrors = {
+            mirror: time for (mirror, time), _ in zip(fastest_mirrors.items(), range(self._cache_size))
+        }
+
     def save(self):
         """
         Saves the best mirrors into the cache according to the cache size.
         """
-        with open('mirrors_list', 'w') as file:
+        with open(self._cache_file_name, 'w') as file:
             file.write(json.dumps(self._cache_mirrors))
 
     def load(self):
         """
         Loads the cache mirrors json from a file.
         """
-        with open('mirrors_list', 'r') as file:
+        with open(self._cache_file_name, 'r') as file:
             self._cache_mirrors = json.load(file)
-
 
 # example to save & load.
 # cache = CacheManager(
