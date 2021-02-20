@@ -2,6 +2,7 @@ from functools import cache
 
 from arg_parser import ArgParser
 from cache import CacheManager
+from config import Config
 from mint_parser import MintParser
 from best_mirrors import FastestMirrors
 
@@ -17,6 +18,8 @@ def write_mirrors_list_to_file(given_list_of_mirrors):
     with open('mirrors_list', 'w') as file_handler:
         file_handler.write(str(given_list_of_mirrors))
 
+
+# config = Config()
 
 # args = ArgParser().parse_args()
 # parser = get_parser(args.parser)
