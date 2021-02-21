@@ -1,4 +1,4 @@
-from functools import cache
+# from functools import cache
 
 from arg_parser import ArgParser
 from cache import CacheManager
@@ -48,16 +48,13 @@ def run_daily(list_of_mirrors, cache_size=20):
     :returns sorted_mirrors: the result of the ping operation. (dict)
     """
 
-    pinger = FastestMirrors(list_of_mirrors)
+    pinger = FastestMirrors()
+    pinger.sort_mirrors_by_ping_avg(mirrors=list_of_mirrors)
     sorted_mirrors = pinger.sorted_mirrors
 
-    cache = CacheManager(cache_size=cache_size)
-    cache.set_cached_mirrors_from_list(sorted_mirrors)
+    cache = CacheManager(fastest_mirrors=pinger, cache_size=cache_size)
+    cache.set_cached_mirrors_from_list()
     cache.save()
-
-    # blacklist.....
-    # ....
-    # ....
 
     # parser.switch_to_fastest_mirror(
     #     upstream_package_file_path='/etc/apt/sources.list.d/official-package-repositories.list',
@@ -103,7 +100,7 @@ def file_len(file_name):
     return i + 1
 
 
-def daily_scan(cache_size=20):
+def daily_scan(cache_size=20, max_mirror_ping_avg=1.0):
     """Pings the cache file and handles post-ping operations.
 
     This function loads the cached mirrors from the cache file
@@ -126,8 +123,8 @@ def daily_scan(cache_size=20):
     if not path.exists('cached_mirrors') or file_len('cached_mirrors') < cache_size / 2:
         full_scan()
     else:
-        cache = CacheManager(cache_size=cache_size)
-        cache.load()
+        cache = CacheManager(fastest_mirrors=FastestMirrors(), cache_size=cache_size)
+        cache.load(max_mirror_ping_time=max_mirror_ping_avg)
         run_daily(cache.cache_mirrors.keys(), cache_size=cache_size)
 
 
