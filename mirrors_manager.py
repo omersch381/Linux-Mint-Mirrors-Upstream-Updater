@@ -1,5 +1,5 @@
 # from functools import cache
-
+from arch_parser import ArchParser
 from arg_parser import ArgParser
 from cache import CacheManager
 from config import Config
@@ -26,8 +26,11 @@ def write_mirrors_list_to_file(given_list_of_mirrors):
 
 # For testing only. In any other case, just comment the next 2 lines
 # and uncomment the previous 2 lines.
-url = 'https://www.linuxmint.com/mirrors.php'
-parser = MintParser(url=url)
+url = 'https://archlinux.org/mirrorlist/all/'
+parser = ArchParser(url=url)
+# parser.parse_mirrors()
+
+# parser.switch_to_fastest_mirror(None, parser.parse_mirrors())
 
 
 def run_daily(list_of_mirrors, cache_size=20):
@@ -127,5 +130,4 @@ def daily_scan(cache_size=20, max_mirror_ping_avg=1.0):
         cache.load(max_mirror_ping_time=max_mirror_ping_avg)
         run_daily(cache.cache_mirrors.keys(), cache_size=cache_size)
 
-
-daily_scan()
+# daily_scan()

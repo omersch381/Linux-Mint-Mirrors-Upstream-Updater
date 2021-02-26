@@ -5,9 +5,10 @@ from bs4 import BeautifulSoup
 
 
 class MintParser(Parser):
-    """This class gets the Mint mirrors.
+    """This class handles the Mint mirrors.
 
     It receives a url, sends a get request (similar to wget), parses the html file into mirrors.
+    It also switches the default mirror to the fastest.
     """
 
     def __init__(self, url):
