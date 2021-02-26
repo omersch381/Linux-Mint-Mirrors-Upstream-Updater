@@ -1,10 +1,10 @@
 import urllib.request as request
 from shutil import copyfile
-
+from parser import Parser
 from bs4 import BeautifulSoup
 
 
-class MintParser:
+class MintParser(Parser):
     """This class gets the Mint mirrors.
 
     It receives a url, sends a get request (similar to wget), parses the html file into mirrors.
