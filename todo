@@ -3,8 +3,8 @@
 (oschwart) write Kali, Arch, Fedora parsers.
 (oschawrt) update README file
 
-implement blacklist handling
+implement blacklist handling (done by Guy)
 use the logging module
-write a Dockerfile that would run on some OS images and would run this program
+write a Dockerfile that would run on some OS images and would run this program (done but need to check if working - Guy)
 use print statements to let the user what happens during scans (e.g. "pings walla.co.il..." "took 89 ms", "fastest so far")
 

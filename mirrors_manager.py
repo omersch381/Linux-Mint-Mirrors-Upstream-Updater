@@ -1,10 +1,12 @@
 # from functools import cache
+import os
 from arch_parser import ArchParser
 from arg_parser import ArgParser
 from cache import CacheManager
 from config import Config
 from mint_parser import MintParser
 from best_mirrors import FastestMirrors
+from docker_images import build_docker_file
 
 from os import path
 
@@ -131,3 +133,35 @@ def daily_scan(cache_size=20, max_mirror_ping_avg=1.0):
         run_daily(cache.cache_mirrors.keys(), cache_size=cache_size)
 
 # daily_scan()
+
+
+def choose_docker_image(image_type='mint'):
+    """
+    Chooses a docker file to build & builds it.
+
+    Note: After executing this function we will have an image with our project inside every container that is built
+            with this image.
+
+    this function execution is similar to the following command for example (executed from our project dir):
+        docker build -f docker_files/mint/Dockerfile . -t <name of our tag>
+
+    Args:
+        image_type (str): the image type, e.g.: one of [arch, kali, fedora, mint]
+    """
+    working_dir = path.abspath(os.getcwd())
+    docker_file_path = f"{working_dir}/docker_files"
+
+    if image_type == 'mint':
+        docker_file_path = f"{docker_file_path}/mint/Dockerfile"
+        tag = "mint"
+    elif image_type == 'fedora':
+        docker_file_path = f"{docker_file_path}/fedora/Dockerfile"
+        tag = "fedora"
+    elif image_type == 'kali':
+        docker_file_path = f"{docker_file_path}/kali/Dockerfile"
+        tag = "kali"
+    else:
+        docker_file_path = f"{docker_file_path}/arch/Dockerfile"
+        tag = "arch"
+
+    return build_docker_file(path=docker_file_path, tag=tag)
