@@ -73,7 +73,7 @@ packaging==20.8
 Paste==3.2.4
 pexpect==4.7.0
 pid==2.2.3
-Pillow==7.0.0
+Pillow==7.1.0
 pluggy==0.13.1
 ply==3.11
 powerline-status==2.8
