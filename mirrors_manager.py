@@ -4,6 +4,7 @@ from arch_parser import ArchParser
 from arg_parser import ArgParser
 from cache import CacheManager
 from config import Config
+from fedora_parser import FedoraParser
 from mint_parser import MintParser
 from best_mirrors import FastestMirrors
 from docker_images import build_docker_file
@@ -29,7 +30,7 @@ def write_mirrors_list_to_file(given_list_of_mirrors):
 # For testing only. In any other case, just comment the next 2 lines
 # and uncomment the previous 2 lines.
 url = 'https://archlinux.org/mirrorlist/all/'
-parser = ArchParser(url=url)
+parser = FedoraParser()
 parser.parse_mirrors()
 
 
