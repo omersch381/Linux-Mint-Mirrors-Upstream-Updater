@@ -9,8 +9,12 @@ class Config:
     def __init__(self):
         self._config_file_name = 'config.ini'
         self._config = configparser.ConfigParser()
-        self._default_values = self._load_default_values()
+        self._default_values = self.load_default_values()
         self.start_config()
+
+    @property
+    def config(self):
+        return self._config
 
     def start_config(self):
         config_type = input('Welcome to Mirrors Manager!\nWould you like to'
@@ -84,11 +88,11 @@ class Config:
         # TODO oschwart: change the [Arch/Kali...] to constants
         operating_system = input('What Operating System do you use?\n'
                                  'We support [' + 'Arch/Kali/Fedora/Mint' + '/e/exit]\n')
-        self._check_operating_system(operating_system)
+        operating_system = self._check_operating_system(operating_system)
         if operating_system in ['e', 'exit']:
             sys.exit()
 
-        self._config['DEFAULT']['Operating System'] = operating_system
+        self._config['DEFAULT']['operating_system'] = operating_system
 
         mirrors_default_location = input('\nWould you like to change the default value of '
                                          'your upstream mirrors location? [y/yes/n/no]\n')
@@ -96,10 +100,21 @@ class Config:
             mirrors_default_location = input('Please enter an absolute path for your '
                                              'upstream mirrors location:\n')
         else:
-            # TODO oschwart: choose the default location that the parser has
-            mirrors_default_location = 'TODO'
-            pass
-        self._config['DEFAULT']['Upstream Mirrors Location'] = mirrors_default_location
+            if operating_system.lower() == 'arch':
+                mirrors_default_location = self._default_values['Arch']['upstream_mirrors_location']
+                mirrors_url = self._default_values['Arch']['mirrors_url']
+            elif operating_system.lower() == 'fedora':
+                mirrors_default_location = self._default_values['Fedora']['upstream_mirrors_location']
+                mirrors_url = 'No Need For That'
+            elif operating_system.lower() == 'kali':
+                mirrors_default_location = self._default_values['Kali']['upstream_mirrors_location']
+                mirrors_url = 'TODO'
+            else:  # Mint
+                mirrors_default_location = self._default_values['Mint']['upstream_mirrors_location']
+                mirrors_url = self._default_values['Mint']['mirrors_url']
+        self._config['DEFAULT']['upstream_mirrors_location'] = mirrors_default_location
+
+        self._config['DEFAULT']['mirrors_url'] = mirrors_url
 
     def _check_operating_system(self, operating_system):
         # TODO oschwart: change the [Arch/Kali...] to constants
@@ -107,6 +122,7 @@ class Config:
             operating_system = input('Sorry, an invalid option was entered, Please try again.\n'
                                      'What Operating System do you use?\n'
                                      'We support [' + 'Arch/Kali/Fedora/Mint' + '/e/exit]\n')
+        return operating_system
 
     def load_config(self):
         self._config.read(self._config_file_name)
@@ -120,7 +136,7 @@ class Config:
         # TODO oschwart: implement this method
         raise NotImplementedError
 
-    def _load_default_values(self):
+    def load_default_values(self):
         self._default_values = configparser.ConfigParser()
         self._default_values.read('default_values.ini')
         return self._default_values

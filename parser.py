@@ -8,5 +8,5 @@ class Parser(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def switch_to_fastest_mirror(self, mirror, upstream_package_file_path):
+    def switch_to_fastest_mirror(self, mirror):
         pass

@@ -1,5 +1,8 @@
 # from functools import cache
 import os
+import sys
+
+import config
 from arch_parser import ArchParser
 from arg_parser import ArgParser
 from cache import CacheManager
@@ -22,16 +25,34 @@ def write_mirrors_list_to_file(given_list_of_mirrors):
         file_handler.write(str(given_list_of_mirrors))
 
 
-# config = Config()
+def get_parser_from_config(config):
+    if config['DEFAULT']['operating_system'] == 'fedora':
+        return FedoraParser()
 
-# args = ArgParser().parse_args()
-# parser = get_parser(args.parser)
+    if config['DEFAULT']['operating_system'] == 'arch':
+        parser = ArchParser
+    elif config['DEFAULT']['operating_system'] == 'kali':
+        raise NotImplementedError  # TODO oschwart
+    elif config['DEFAULT']['operating_system'] == 'mint':
+        parser = MintParser
 
-# For testing only. In any other case, just comment the next 2 lines
-# and uncomment the previous 2 lines.
-url = 'https://archlinux.org/mirrorlist/all/'
-parser = FedoraParser()
-parser.parse_mirrors()
+    return parser(config['DEFAULT']['mirrors_url'], config['DEFAULT']['upstream_mirrors_location'])
+
+
+def get_parser_from_terminal(provided_parser, url, upstream_location):
+    if not url:  # Fedora
+        return provided_parser()
+    if upstream_location:  # if the user chooses a different mirror location
+        parser = provided_parser(url, upstream_location)
+    else:
+        parser = provided_parser(url)
+    return parser
+
+
+def exit_os():
+    print('Please enter an operation system which we support. For further details, please '
+          'take a look at our README file.')
+    sys.exit()
 
 
 def run_daily(list_of_mirrors, cache_size=20):
@@ -130,9 +151,6 @@ def daily_scan(cache_size=20, max_mirror_ping_avg=1.0):
         run_daily(cache.cache_mirrors.keys(), cache_size=cache_size)
 
 
-daily_scan()
-
-
 def choose_docker_image(image_type='mint'):
     """
     Chooses a docker file to build & builds it.
@@ -163,3 +181,48 @@ def choose_docker_image(image_type='mint'):
         tag = "arch"
 
     return build_docker_file(path=docker_file_path, tag=tag)
+
+
+args = ArgParser().parse_args()
+
+if args.config:
+    config = Config()
+    parser = get_parser_from_config(config.config)
+    full_scan()
+
+else:
+    upstream_location = None
+    if args.mirrors_location:
+        upstream_location = args.mirrors_location
+
+    if not args.parser:
+        exit_os()
+
+    if args.parser.lower() == 'mint':
+        parser = get_parser_from_terminal(provided_parser=MintParser,
+                                          url='https://linuxmint.com/mirrors.php',
+                                          upstream_location=upstream_location)
+    elif args.parser.lower() == 'arch':
+        parser = get_parser_from_terminal(provided_parser=ArchParser,
+                                          url='https://archlinux.org/mirrorlist/all/',
+                                          upstream_location=upstream_location)
+    elif args.parser.lower() == 'kali':
+        # TODO oschwart
+        raise NotImplementedError
+    elif args.parser.lower() == 'fedora':
+        parser = get_parser_from_terminal(provided_parser=FedoraParser,  # Fedora
+                                          url=None,
+                                          upstream_location=None)
+    else:
+        exit_os()
+
+    if args.scan_type.lower() in ['full_scan', 'full scan']:
+        full_scan()
+    else:
+        daily_scan()
+
+# For testing only. In any other case, just comment the next 2 lines
+# and uncomment the previous 2 lines.
+# url = 'https://archlinux.org/mirrorlist/all/'
+# parser = FedoraParser()
+parser.parse_mirrors()

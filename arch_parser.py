@@ -13,8 +13,9 @@ class ArchParser(Parser):
     It also switches the default mirror to the fastest.
     """
 
-    def __init__(self, url):
+    def __init__(self, url, upstream_package_file_path='/etc/pacman.d/mirrorlist'):
         self._url = url
+        self._upstream_package_file_path = upstream_package_file_path
         self._raw_mirrors = None
 
     @property
@@ -30,10 +31,9 @@ class ArchParser(Parser):
 
         return [line.split('/')[2] for line in self._raw_mirrors if '#Server' in line]
 
-    def switch_to_fastest_mirror(self, mirror,
-                                 upstream_package_file_path='/etc/pacman.d/mirrorlist'):
+    def switch_to_fastest_mirror(self, mirror):
         # Saving a backup of the configuration file
-        copyfile(upstream_package_file_path, upstream_package_file_path + '.bak')
+        copyfile(self._upstream_package_file_path, self._upstream_package_file_path + '.bak')
 
         abstract = """
 ################################################################################
@@ -46,5 +46,5 @@ class ArchParser(Parser):
                 mirror = full_mirror[1:] + '\n'
 
         mirrors_file_content = abstract + mirror
-        with open(upstream_package_file_path, 'w') as file:
+        with open(self._upstream_package_file_path, 'w') as file:
             file.write(mirrors_file_content)

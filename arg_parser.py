@@ -13,10 +13,12 @@ class ArgParser:
         self._args = None
 
     def parse_args(self):
-        # self._parser.add_argument("url", help="The URL where all the mirrors are located")
-        self._parser.add_argument("parser", help="The parser which will get and parse the mirrors.")
-        self._parser.add_argument("scan_type", help="The type of the scan."
-                                                    " Might be a full scan or a daily scan")
+        self._parser.add_argument("-p", "--parser", help="The parser which will get and parse the mirrors.", metavar='')
+        self._parser.add_argument("-s", "--scan_type", help="The type of the scan."
+                                                            " Might be a full scan or a daily scan", metavar='')
+        self._parser.add_argument("-m", "--mirrors_location", help="The upstream mirror file's path.", metavar='')
+        self._parser.add_argument("-c", "--config", help="Configure the mirror manager by your preferences.",
+                                  action='store_true')
         self._args = self._parser.parse_args()
         return self._args
 

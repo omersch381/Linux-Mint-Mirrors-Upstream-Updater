@@ -11,8 +11,9 @@ class MintParser(Parser):
     It also switches the default mirror to the fastest.
     """
 
-    def __init__(self, url):
+    def __init__(self, url, upstream_package_file_path='/etc/apt/sources.list.d/official-package-repositories.list'):
         self._url = url
+        self._upstream_package_file_path = upstream_package_file_path
 
     @property
     def url(self):
@@ -30,14 +31,14 @@ class MintParser(Parser):
 
         return [str(html_object).split('/')[2] for html_object in list_of_objects]
 
-    def switch_to_fastest_mirror(self, mirror, upstream_package_file_path):
+    def switch_to_fastest_mirror(self, mirror):
         # Saving a backup of the configuration file
-        copyfile(upstream_package_file_path, upstream_package_file_path + '.bak')
+        copyfile(self._upstream_package_file_path, self._upstream_package_file_path + '.bak')
 
-        with open(upstream_package_file_path, 'r') as file:
+        with open(self._upstream_package_file_path, 'r') as file:
             filedata = file.read()
 
-        with open(upstream_package_file_path, 'w') as file:
+        with open(self._upstream_package_file_path, 'w') as file:
             for line in filedata.splitlines():
                 if 'upstream import backport' in line:
                     words = line.split()
