@@ -11,3 +11,6 @@ RUN pip3 install configparser
 RUN pip3 install pythonping
 RUN pip3 install argparse
 RUN pip3 install docker
+
+RUN apt-get install -y vim
+RUN apt-get update -y
