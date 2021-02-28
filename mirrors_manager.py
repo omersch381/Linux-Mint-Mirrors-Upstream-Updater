@@ -30,9 +30,7 @@ def write_mirrors_list_to_file(given_list_of_mirrors):
 # and uncomment the previous 2 lines.
 url = 'https://archlinux.org/mirrorlist/all/'
 parser = ArchParser(url=url)
-# parser.parse_mirrors()
-
-# parser.switch_to_fastest_mirror(None, parser.parse_mirrors())
+parser.parse_mirrors()
 
 
 def run_daily(list_of_mirrors, cache_size=20):
@@ -61,9 +59,7 @@ def run_daily(list_of_mirrors, cache_size=20):
     cache.set_cached_mirrors_from_list()
     cache.save()
 
-    # parser.switch_to_fastest_mirror(
-    #     upstream_package_file_path='/etc/apt/sources.list.d/official-package-repositories.list',
-    #     mirror='mirrors.evowise.com')
+    parser.switch_to_fastest_mirror(mirror=cache[0])
     return sorted_mirrors
 
 
@@ -86,10 +82,10 @@ def full_scan(cache_size=20):
     # Argparser fully, but it will be implemented soon.
 
     list_of_mirrors = parser.parse_mirrors()
-
     # after testing we should comment the next line and uncomment the previous one
-    example_for_testing = ['mirrors.evowise.com', 'mirrors.layeronline.com', 'muug.ca', 'mirror.scd31.com',
-                           'mirror.csclub.uwaterloo.ca', 'mirrors.advancedhosters.com']
+    example_for_testing = ['mirrors.evowise.com', 'mirror.rackspace.com', 'mirror.rackspace.com',
+                           'mirror.aarnet.edu.au', 'archlinux.mirror.digitalpacific.com.au',
+                           'archlinux.mirror.digitalpacific.com.au']
 
     run_daily(example_for_testing, cache_size=20)
 
@@ -132,7 +128,8 @@ def daily_scan(cache_size=20, max_mirror_ping_avg=1.0):
         cache.load(max_mirror_ping_time=max_mirror_ping_avg)
         run_daily(cache.cache_mirrors.keys(), cache_size=cache_size)
 
-# daily_scan()
+
+daily_scan()
 
 
 def choose_docker_image(image_type='mint'):

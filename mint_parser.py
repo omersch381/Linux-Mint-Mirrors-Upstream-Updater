@@ -30,7 +30,7 @@ class MintParser(Parser):
 
         return [str(html_object).split('/')[2] for html_object in list_of_objects]
 
-    def switch_to_fastest_mirror(self, upstream_package_file_path, mirror):
+    def switch_to_fastest_mirror(self, mirror, upstream_package_file_path):
         # Saving a backup of the configuration file
         copyfile(upstream_package_file_path, upstream_package_file_path + '.bak')
 

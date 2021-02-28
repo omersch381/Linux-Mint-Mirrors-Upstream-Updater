@@ -30,7 +30,8 @@ class ArchParser(Parser):
 
         return [line.split('/')[2] for line in self._raw_mirrors if '#Server' in line]
 
-    def switch_to_fastest_mirror(self, upstream_package_file_path, list_of_mirrors):
+    def switch_to_fastest_mirror(self, mirror,
+                                 upstream_package_file_path='/etc/pacman.d/mirrorlist'):
         # TODO: make sure it accepts a sorted list of mirrors instead of a single mirror
 
         # Saving a backup of the configuration file
@@ -42,11 +43,11 @@ class ArchParser(Parser):
 ################################################################################
         
 """
-        if len(list_of_mirrors) == 1:  # if we received a single one and not a list
-            list_of_mirrors = [list_of_mirrors]
+        if len(mirror) == 1:  # if we received a single one and not a list
+            mirror = [mirror]
 
         list_of_sorted_mirrors = []
-        for mirror in list_of_mirrors:
+        for mirror in mirror:
             for full_mirror in self._raw_mirrors:
                 if mirror in full_mirror:
                     list_of_sorted_mirrors.append(full_mirror[1:] + '\n')
