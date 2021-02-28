@@ -32,8 +32,6 @@ class ArchParser(Parser):
 
     def switch_to_fastest_mirror(self, mirror,
                                  upstream_package_file_path='/etc/pacman.d/mirrorlist'):
-        # TODO: make sure it accepts a sorted list of mirrors instead of a single mirror
-
         # Saving a backup of the configuration file
         copyfile(upstream_package_file_path, upstream_package_file_path + '.bak')
 
@@ -43,15 +41,10 @@ class ArchParser(Parser):
 ################################################################################
         
 """
-        if len(mirror) == 1:  # if we received a single one and not a list
-            mirror = [mirror]
+        for full_mirror in self._raw_mirrors:
+            if mirror in full_mirror:
+                mirror = full_mirror[1:] + '\n'
 
-        list_of_sorted_mirrors = []
-        for mirror in mirror:
-            for full_mirror in self._raw_mirrors:
-                if mirror in full_mirror:
-                    list_of_sorted_mirrors.append(full_mirror[1:] + '\n')
-
-        mirrors_file_content = abstract + ''.join(list_of_sorted_mirrors)
+        mirrors_file_content = abstract + mirror
         with open(upstream_package_file_path, 'w') as file:
             file.write(mirrors_file_content)

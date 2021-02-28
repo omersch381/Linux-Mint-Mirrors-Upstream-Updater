@@ -59,7 +59,7 @@ def run_daily(list_of_mirrors, cache_size=20):
     cache.set_cached_mirrors_from_list()
     cache.save()
 
-    parser.switch_to_fastest_mirror(mirror=cache[0])
+    parser.switch_to_fastest_mirror(mirror=next(iter(cache.cache_mirrors.keys())))
     return sorted_mirrors
 
 
@@ -87,7 +87,7 @@ def full_scan(cache_size=20):
                            'mirror.aarnet.edu.au', 'archlinux.mirror.digitalpacific.com.au',
                            'archlinux.mirror.digitalpacific.com.au']
 
-    run_daily(example_for_testing, cache_size=20)
+    run_daily(example_for_testing, cache_size=cache_size)
 
     # write_mirrors_list_to_file(run_daily(example_for_testing, cache_size=20))
     # or
