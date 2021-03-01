@@ -1,9 +1,10 @@
 FROM archlinux
 
-RUN pacman -Syu python git python-pip networkmanager --noconfirm
+COPY . /mirrors_project
+WORKDIR /mirrors_project
 
-RUN python -m pip install bs4 pythonping docker
+RUN pacman -Syu python git python-pip networkmanager vim --noconfirm
+
+RUN pip3 install setuptools configparser bs4 pythonping docker argparse
 
 RUN systemctl enable NetworkManager
-
-COPY . /mirrors_project
