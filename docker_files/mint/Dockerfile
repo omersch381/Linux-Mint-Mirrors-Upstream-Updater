@@ -11,3 +11,4 @@ RUN sudo apt install -y python3-pip
 RUN pip3 install setuptools
 RUN pip3 install bs4 configparser pythonping argparse docker
 
+#RUN python3 mirrors_manager.py --parser mint
