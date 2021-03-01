@@ -85,9 +85,9 @@ class Config:
     def mandatory_config(self):
         print('\nWe are going to ask you about some preferences regarding mirror managing.')
         print('For further details, please take a look at our README file.\n')
-        # TODO oschwart: change the [Arch/Kali...] to constants
+        # TODO oschwart: change the [Arch/...] to constants
         operating_system = input('What Operating System do you use?\n'
-                                 'We support [' + 'Arch/Kali/Fedora/Mint' + '/e/exit]\n')
+                                 'We support [' + 'Arch/Fedora/Mint' + '/e/exit]\n')
         operating_system = self._check_operating_system(operating_system)
         if operating_system in ['e', 'exit']:
             sys.exit()
@@ -106,9 +106,6 @@ class Config:
             elif operating_system.lower() == 'fedora':
                 mirrors_default_location = self._default_values['Fedora']['upstream_mirrors_location']
                 mirrors_url = 'No Need For That'
-            elif operating_system.lower() == 'kali':
-                mirrors_default_location = self._default_values['Kali']['upstream_mirrors_location']
-                mirrors_url = 'TODO'
             else:  # Mint
                 mirrors_default_location = self._default_values['Mint']['upstream_mirrors_location']
                 mirrors_url = self._default_values['Mint']['mirrors_url']
@@ -117,11 +114,11 @@ class Config:
         self._config['DEFAULT']['mirrors_url'] = mirrors_url
 
     def _check_operating_system(self, operating_system):
-        # TODO oschwart: change the [Arch/Kali...] to constants
-        while not operating_system.lower() in ['arch', 'kali', 'fedora', 'mint', 'e', 'exit']:
+        # TODO oschwart: change the [Arch/...] to constants
+        while not operating_system.lower() in ['arch', 'fedora', 'mint', 'e', 'exit']:
             operating_system = input('Sorry, an invalid option was entered, Please try again.\n'
                                      'What Operating System do you use?\n'
-                                     'We support [' + 'Arch/Kali/Fedora/Mint' + '/e/exit]\n')
+                                     'We support [' + 'Arch/Fedora/Mint' + '/e/exit]\n')
         return operating_system
 
     def load_config(self):

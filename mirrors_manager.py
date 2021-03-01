@@ -31,8 +31,6 @@ def get_parser_from_config(config):
 
     if config['DEFAULT']['operating_system'] == 'arch':
         parser = ArchParser
-    elif config['DEFAULT']['operating_system'] == 'kali':
-        raise NotImplementedError  # TODO oschwart
     elif config['DEFAULT']['operating_system'] == 'mint':
         parser = MintParser
 
@@ -162,7 +160,7 @@ def choose_docker_image(image_type='mint'):
         docker build -f docker_files/mint/Dockerfile . -t <name of our tag>
 
     Args:
-        image_type (str): the image type, e.g.: one of [arch, kali, fedora, mint]
+        image_type (str): the image type, e.g.: one of [arch, fedora, mint]
     """
     working_dir = path.abspath(os.getcwd())
     docker_file_path = f"{working_dir}/docker_files"
@@ -173,9 +171,6 @@ def choose_docker_image(image_type='mint'):
     elif image_type == 'fedora':
         docker_file_path = f"{docker_file_path}/fedora/Dockerfile"
         tag = "fedora"
-    elif image_type == 'kali':
-        docker_file_path = f"{docker_file_path}/kali/Dockerfile"
-        tag = "kali"
     else:
         docker_file_path = f"{docker_file_path}/arch/Dockerfile"
         tag = "arch"
@@ -206,9 +201,6 @@ else:
         parser = get_parser_from_terminal(provided_parser=ArchParser,
                                           url='https://archlinux.org/mirrorlist/all/',
                                           upstream_location=upstream_location)
-    elif args.parser.lower() == 'kali':
-        # TODO oschwart
-        raise NotImplementedError
     elif args.parser.lower() == 'fedora':
         parser = get_parser_from_terminal(provided_parser=FedoraParser,  # Fedora
                                           url=None,
@@ -216,10 +208,10 @@ else:
     else:
         exit_os()
 
-    if args.scan_type.lower() in ['full_scan', 'full scan']:
-        full_scan()
-    else:
+    if args.scan_type and args.scan_type.lower() in ['daily_scan', 'daily scan']:
         daily_scan()
+    else:
+        full_scan()
 
 # For testing only. In any other case, just comment the next 2 lines
 # and uncomment the previous 2 lines.
