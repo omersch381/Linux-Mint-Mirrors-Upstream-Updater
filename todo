@@ -1,10 +1,4 @@
-(oschwart) implement a configuration file that will serve as a "constants file" and will store user preferences.
 (oschwart) implement more options for the Argparser and take care of first run (init)
-(oschwart) write Kali, Arch, Fedora parsers.
-(oschawrt) update README file
-
-implement blacklist handling (done by Guy)
 use the logging module
-write a Dockerfile that would run on some OS images and would run this program (done but need to check if working - Guy)
-use print statements to let the user what happens during scans (e.g. "pings walla.co.il..." "took 89 ms", "fastest so far")
-
+finish with argparse
+huge refactor (including that init class)

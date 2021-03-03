@@ -43,7 +43,7 @@ class FastestMirrors(object):
                         new_fastest_mirror=mirror))
 
             except RuntimeError:  # means that mirror cannot be reached or broken.
-                pass
+                print()
 
         self._sorted_mirrors = {
             mirror: mirrors_ping_average[mirror] for mirror in sorted(

@@ -1,6 +1,7 @@
 # from functools import cache
 import os
 import sys
+import logging
 
 import config
 from arch_parser import ArchParser
@@ -8,11 +9,15 @@ from arg_parser import ArgParser
 from cache import CacheManager
 from config import Config
 from fedora_parser import FedoraParser
+from logger import Logger
 from mint_parser import MintParser
 from best_mirrors import FastestMirrors
 from docker_images import build_docker_file
 
 from os import path
+
+logger = Logger(__name__)
+logger = logger.logger
 
 
 def write_mirrors_list_to_file(given_list_of_mirrors):
@@ -71,6 +76,7 @@ def run_daily(list_of_mirrors, cache_size=20):
     :returns sorted_mirrors: the result of the ping operation. (dict)
     """
 
+    logger.debug('run daily')
     pinger = FastestMirrors()
     pinger.sort_mirrors_by_ping_avg(mirrors=list_of_mirrors)
     sorted_mirrors = pinger.sorted_mirrors
@@ -100,6 +106,8 @@ def full_scan(cache_size=20):
 
     # NOTE: we still don't get the parser from the user as we didn't implement the
     # Argparser fully, but it will be implemented soon.
+
+    logger.debug('full scan')
 
     list_of_mirrors = parser.parse_mirrors()
     # after testing we should comment the next line and uncomment the previous one
@@ -140,6 +148,8 @@ def daily_scan(cache_size=20, max_mirror_ping_avg=1.0):
 
     # NOTE: we still don't get the parser from the user as we didn't implement the
     # Argparser fully, but it will be implemented soon.
+
+    logger.debug('daily scan')
 
     if not path.exists('cached_mirrors') or file_len('cached_mirrors') < cache_size / 2:
         full_scan()
