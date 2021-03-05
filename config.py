@@ -1,5 +1,6 @@
 import configparser
 import sys
+from constants import *
 
 
 class Config:
@@ -7,10 +8,9 @@ class Config:
     """
 
     def __init__(self):
-        self._config_file_name = 'config.ini'
+        self._config_file_name = CONFING_FILE_NAME
         self._config = configparser.ConfigParser()
         self._default_values = self.load_default_values()
-        self.start_config()
 
     @property
     def config(self):
@@ -47,10 +47,10 @@ class Config:
                            'Press [s/skip] to assign the default value\n')
 
         if cache_size.lower() in ['s', 'skip']:
-            cache_size = self._default_values['Cache']['cache_size']
+            cache_size = self._default_values[CACHE][CACHE_SIZE]
 
-        self._config['Cache'] = {}
-        self._config['Cache']['cache_size'] = cache_size
+        self._config[CACHE] = {}
+        self._config[CACHE][CACHE_SIZE] = cache_size
 
     def _handle_pinging_time_max_limit(self):
         pinging_time_max_limit = input('\nWhat should be your pinging time max limit in milliseconds? '
@@ -59,19 +59,19 @@ class Config:
                                        'Press [s/skip] to assign the default value\n')
 
         if pinging_time_max_limit.lower() in ['s', 'skip']:
-            pinging_time_max_limit = self._default_values['Blacklist']['pinging_time_max_limit']
+            pinging_time_max_limit = self._default_values[BLACKLIST][PINGING_TIME_MAX_LIMIT]
 
-        self._config['Blacklist'] = {}
-        self._config['Blacklist']['pinging_time_max_limit'] = pinging_time_max_limit
+        self._config[BLACKLIST] = {}
+        self._config[BLACKLIST][PINGING_TIME_MAX_LIMIT] = pinging_time_max_limit
 
     def _handle_full_scans_frequency(self):
         full_scans_frequency = input('\nWhat should be the full scans frequency? '
                                      '(every X runs of daily scans, a full scan would run) [integer]\n'
                                      'Press [s/skip] to assign the default value\n')
         if full_scans_frequency.lower() in ['s', 'skip']:
-            full_scans_frequency = self._default_values['DEFAULT']['full_scans_frequency']
+            full_scans_frequency = self._default_values[DEFAULT][FULL_SCAN_FREQUENCY]
 
-        self._config['DEFAULT']['full_scans_frequency'] = full_scans_frequency
+        self._config[DEFAULT][FULL_SCAN_FREQUENCY] = full_scans_frequency
 
     def full_config(self):
         self.mandatory_config()
@@ -85,40 +85,40 @@ class Config:
     def mandatory_config(self):
         print('\nWe are going to ask you about some preferences regarding mirror managing.')
         print('For further details, please take a look at our README file.\n')
-        # TODO oschwart: change the [Arch/...] to constants
         operating_system = input('What Operating System do you use?\n'
-                                 'We support [' + 'Arch/Fedora/Mint' + '/e/exit]\n')
+                                 'We support [' + '/'.join(ALL_PARSERS) + '/e/exit]\n')
         operating_system = self._check_operating_system(operating_system)
         if operating_system in ['e', 'exit']:
             sys.exit()
 
-        self._config['DEFAULT']['operating_system'] = operating_system
+        self._config[DEFAULT][OPERATING_SYSTEM] = operating_system
+
+        # set mirrors_default_location and mirrors_url
+        if operating_system.lower() == ARCH_PARSER:
+            os_section = ARCH_SECTION
+        elif operating_system.lower() == FEDORA_PARSER:
+            os_section = FEDORA_SECTION
+        else:  # Mint
+            os_section = MINT_SECTION
 
         mirrors_default_location = input('\nWould you like to change the default value of '
-                                         'your upstream mirrors location? [y/yes/n/no]\n')
+                                         'your upstream mirrors file location? [y/yes/n/no]\n')
         if mirrors_default_location.lower() in ['y', 'yes']:
             mirrors_default_location = input('Please enter an absolute path for your '
-                                             'upstream mirrors location:\n')
+                                             'upstream mirrors file location:\n')
         else:
-            if operating_system.lower() == 'arch':
-                mirrors_default_location = self._default_values['Arch']['upstream_mirrors_location']
-                mirrors_url = self._default_values['Arch']['mirrors_url']
-            elif operating_system.lower() == 'fedora':
-                mirrors_default_location = self._default_values['Fedora']['upstream_mirrors_location']
-                mirrors_url = 'No Need For That'
-            else:  # Mint
-                mirrors_default_location = self._default_values['Mint']['upstream_mirrors_location']
-                mirrors_url = self._default_values['Mint']['mirrors_url']
-        self._config['DEFAULT']['upstream_mirrors_location'] = mirrors_default_location
+            mirrors_default_location = self._default_values[os_section][UPSTREAM_MIRRORS_LOCATION]
 
-        self._config['DEFAULT']['mirrors_url'] = mirrors_url
+        mirrors_url = self._default_values[os_section][MIRRORS_URL]
+
+        self._config[DEFAULT][UPSTREAM_MIRRORS_LOCATION] = mirrors_default_location
+        self._config[DEFAULT][MIRRORS_URL] = mirrors_url
 
     def _check_operating_system(self, operating_system):
-        # TODO oschwart: change the [Arch/...] to constants
         while not operating_system.lower() in ['arch', 'fedora', 'mint', 'e', 'exit']:
             operating_system = input('Sorry, an invalid option was entered, Please try again.\n'
                                      'What Operating System do you use?\n'
-                                     'We support [' + 'Arch/Fedora/Mint' + '/e/exit]\n')
+                                     'We support [' + '/'.join(ALL_PARSERS) + '/e/exit]\n')
         return operating_system
 
     def load_config(self):
@@ -135,5 +135,8 @@ class Config:
 
     def load_default_values(self):
         self._default_values = configparser.ConfigParser()
-        self._default_values.read('default_values.ini')
+        self._default_values.read(DEFAULT_VALUES_NAME)
         return self._default_values
+
+    def get_default_value_of(self, section, field):
+        return self._default_values[section][field]

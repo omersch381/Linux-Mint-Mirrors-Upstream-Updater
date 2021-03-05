@@ -1,20 +1,13 @@
-# from functools import cache
 import os
-import sys
-import logging
-
-import config
-from arch_parser import ArchParser
-from arg_parser import ArgParser
-from cache import CacheManager
-from config import Config
-from fedora_parser import FedoraParser
-from logger import Logger
-from mint_parser import MintParser
-from best_mirrors import FastestMirrors
-from docker_images import build_docker_file
-
 from os import path
+
+from arg_parser import ArgParser
+from best_mirrors import FastestMirrors
+from cache import CacheManager
+from constants import *
+from docker_images import build_docker_file
+from init import get_parser_and_scan_type
+from logger import Logger
 
 logger = Logger(__name__)
 logger = logger.logger
@@ -30,35 +23,7 @@ def write_mirrors_list_to_file(given_list_of_mirrors):
         file_handler.write(str(given_list_of_mirrors))
 
 
-def get_parser_from_config(config):
-    if config['DEFAULT']['operating_system'] == 'fedora':
-        return FedoraParser()
-
-    if config['DEFAULT']['operating_system'] == 'arch':
-        parser = ArchParser
-    elif config['DEFAULT']['operating_system'] == 'mint':
-        parser = MintParser
-
-    return parser(config['DEFAULT']['mirrors_url'], config['DEFAULT']['upstream_mirrors_location'])
-
-
-def get_parser_from_terminal(provided_parser, url, upstream_location):
-    if not url:  # Fedora
-        return provided_parser()
-    if upstream_location:  # if the user chooses a different mirror location
-        parser = provided_parser(url, upstream_location)
-    else:
-        parser = provided_parser(url)
-    return parser
-
-
-def exit_os():
-    print('Please enter an operation system which we support. For further details, please '
-          'take a look at our README file.')
-    sys.exit()
-
-
-def run_daily(list_of_mirrors, cache_size=20):
+def run_daily(parser, list_of_mirrors, cache_size=20):
     """Pings the provided mirrors and handles post-ping operations.
 
     This function pings the provided operations and
@@ -89,7 +54,7 @@ def run_daily(list_of_mirrors, cache_size=20):
     return sorted_mirrors
 
 
-def full_scan(cache_size=20):
+def full_scan(parser, cache_size=20):
     """Pings all the upstream mirrors.
 
     This function uses a provided parser and do the following operations:
@@ -104,18 +69,13 @@ def full_scan(cache_size=20):
     :param cache_size: the size of the mirrors to be saved in cache. (int)
     """
 
-    # NOTE: we still don't get the parser from the user as we didn't implement the
-    # Argparser fully, but it will be implemented soon.
-
     logger.debug('full scan')
 
     list_of_mirrors = parser.parse_mirrors()
     # after testing we should comment the next line and uncomment the previous one
-    example_for_testing = ['mirrors.evowise.com', 'mirror.rackspace.com', 'mirror.rackspace.com',
-                           'mirror.aarnet.edu.au', 'archlinux.mirror.digitalpacific.com.au',
-                           'archlinux.mirror.digitalpacific.com.au']
+    example_for_testing = ['mirrors.evowise.com']
 
-    run_daily(example_for_testing, cache_size=cache_size)
+    run_daily(parser, example_for_testing, cache_size=cache_size)
 
     # write_mirrors_list_to_file(run_daily(example_for_testing, cache_size=20))
     # or
@@ -129,7 +89,7 @@ def file_len(file_name):
     return i + 1
 
 
-def daily_scan(cache_size=20, max_mirror_ping_avg=1.0):
+def daily_scan(parser, cache_size=20, max_mirror_ping_avg=1.0):
     """Pings the cache file and handles post-ping operations.
 
     This function loads the cached mirrors from the cache file
@@ -146,9 +106,6 @@ def daily_scan(cache_size=20, max_mirror_ping_avg=1.0):
     :param cache_size: the size of the mirrors to be saved in cache. (int)
     """
 
-    # NOTE: we still don't get the parser from the user as we didn't implement the
-    # Argparser fully, but it will be implemented soon.
-
     logger.debug('daily scan')
 
     if not path.exists('cached_mirrors') or file_len('cached_mirrors') < cache_size / 2:
@@ -156,7 +113,7 @@ def daily_scan(cache_size=20, max_mirror_ping_avg=1.0):
     else:
         cache = CacheManager(fastest_mirrors=FastestMirrors(), cache_size=cache_size)
         cache.load(max_mirror_ping_time=max_mirror_ping_avg)
-        run_daily(cache.cache_mirrors.keys(), cache_size=cache_size)
+        run_daily(parser, cache.cache_mirrors.keys(), cache_size=cache_size)
 
 
 def choose_docker_image(image_type='mint'):
@@ -175,56 +132,24 @@ def choose_docker_image(image_type='mint'):
     working_dir = path.abspath(os.getcwd())
     docker_file_path = f"{working_dir}/docker_files"
 
-    if image_type == 'mint':
-        docker_file_path = f"{docker_file_path}/mint/Dockerfile"
-        tag = "mint"
-    elif image_type == 'fedora':
-        docker_file_path = f"{docker_file_path}/fedora/Dockerfile"
-        tag = "fedora"
+    if image_type == MINT_PARSER:
+        docker_file_path = f"{docker_file_path}/{MINT_PARSER}/Dockerfile"
+        tag = MINT_PARSER
+    elif image_type == FEDORA_PARSER:
+        docker_file_path = f"{docker_file_path}/{FEDORA_PARSER}/Dockerfile"
+        tag = FEDORA_PARSER
     else:
-        docker_file_path = f"{docker_file_path}/arch/Dockerfile"
-        tag = "arch"
+        docker_file_path = f"{docker_file_path}/{ARCH_PARSER}/Dockerfile"
+        tag = ARCH_PARSER
 
     return build_docker_file(path=docker_file_path, tag=tag)
 
 
 args = ArgParser().parse_args()
 
-if args.config:
-    config = Config()
-    parser = get_parser_from_config(config.config)
-    full_scan()
+parser, scan_type = get_parser_and_scan_type(args=args)
 
+if scan_type == FULL_SCAN:
+    full_scan(parser=parser)
 else:
-    upstream_location = None
-    if args.mirrors_location:
-        upstream_location = args.mirrors_location
-
-    if not args.parser:
-        exit_os()
-
-    if args.parser.lower() == 'mint':
-        parser = get_parser_from_terminal(provided_parser=MintParser,
-                                          url='https://linuxmint.com/mirrors.php',
-                                          upstream_location=upstream_location)
-    elif args.parser.lower() == 'arch':
-        parser = get_parser_from_terminal(provided_parser=ArchParser,
-                                          url='https://archlinux.org/mirrorlist/all/',
-                                          upstream_location=upstream_location)
-    elif args.parser.lower() == 'fedora':
-        parser = get_parser_from_terminal(provided_parser=FedoraParser,  # Fedora
-                                          url=None,
-                                          upstream_location=None)
-    else:
-        exit_os()
-
-    if args.scan_type and args.scan_type.lower() in ['daily_scan', 'daily scan']:
-        daily_scan()
-    else:
-        full_scan()
-
-# For testing only. In any other case, just comment the next 2 lines
-# and uncomment the previous 2 lines.
-# url = 'https://archlinux.org/mirrorlist/all/'
-# parser = FedoraParser()
-parser.parse_mirrors()
+    daily_scan(parser=parser)
