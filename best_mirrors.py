@@ -1,5 +1,10 @@
 from pythonping import ping
 
+from logger import Logger
+
+logger = Logger(__name__)
+logger = logger.logger
+
 
 class FastestMirrors(object):
     """
@@ -34,9 +39,11 @@ class FastestMirrors(object):
         for mirror in mirrors:
             try:
                 print('Pinging {mirror}... '.format(mirror=mirror), end='')
+                logger.debug('Pinging {mirror}... '.format(mirror=mirror))
                 ping_response = ping(target=mirror)
                 mirrors_ping_average[mirror] = ping_response.rtt_avg
                 print('took {avg_pinging_time} seconds.'.format(avg_pinging_time=mirrors_ping_average[mirror]))
+                logger.debug('took {avg_pinging_time} seconds.'.format(avg_pinging_time=mirrors_ping_average[mirror]))
                 if fastest_mirror_pinging_time > mirrors_ping_average[mirror]:
                     fastest_mirror_pinging_time = mirrors_ping_average[mirror]
                     print('{new_fastest_mirror} is the fastest mirror so far!'.format(
@@ -50,3 +57,4 @@ class FastestMirrors(object):
                 mirrors_ping_average, key=mirrors_ping_average.get
             )
         }
+        logger.debug(f'Sorted mirrors are:\n{self._sorted_mirrors}')

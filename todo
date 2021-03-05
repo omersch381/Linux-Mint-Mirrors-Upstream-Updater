@@ -1,4 +1,4 @@
-(oschwart) implement more options for the Argparser and take care of first run (init)
+(oschwart) take care of first run (init)
 use the logging module
-finish with argparse
-huge refactor (including that init class)
+huge refactor
+implement all TODOs

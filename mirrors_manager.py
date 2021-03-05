@@ -19,8 +19,10 @@ def write_mirrors_list_to_file(given_list_of_mirrors):
     :param given_list_of_mirrors: The sorted mirrors that we have found.
     """
 
+    logger.debug('Writing the mirrors to file:')
     with open('mirrors_list', 'w') as file_handler:
         file_handler.write(str(given_list_of_mirrors))
+        logger.debug(str(given_list_of_mirrors))
 
 
 def run_daily(parser, list_of_mirrors, cache_size=20):
@@ -41,7 +43,6 @@ def run_daily(parser, list_of_mirrors, cache_size=20):
     :returns sorted_mirrors: the result of the ping operation. (dict)
     """
 
-    logger.debug('run daily')
     pinger = FastestMirrors()
     pinger.sort_mirrors_by_ping_avg(mirrors=list_of_mirrors)
     sorted_mirrors = pinger.sorted_mirrors
@@ -70,9 +71,10 @@ def full_scan(parser, cache_size=20):
     """
 
     logger.debug('full scan')
-
-    list_of_mirrors = parser.parse_mirrors()
-    # after testing we should comment the next line and uncomment the previous one
+    if hasattr(parser, 'list_of_mirrors'):
+        list_of_mirrors = parser.list_of_mirrors
+    # logger.debug('list of mirrors:\n' + list_of_mirrors)
+    # TODO oschwart: after testing we should comment the next line and uncomment the previous one
     example_for_testing = ['mirrors.evowise.com']
 
     run_daily(parser, example_for_testing, cache_size=cache_size)
@@ -108,8 +110,10 @@ def daily_scan(parser, cache_size=20, max_mirror_ping_avg=1.0):
 
     logger.debug('daily scan')
 
-    if not path.exists('cached_mirrors') or file_len('cached_mirrors') < cache_size / 2:
-        full_scan()
+    if not path.exists(CACHED_MIRRORS_FILE_NAME) or file_len(CACHED_MIRRORS_FILE_NAME) < cache_size / 2:
+        logger.debug('There was not a cached mirrors file, or number of cached mirrors'
+                     ' entries was less than half of the given cache_size')
+        full_scan(parser)
     else:
         cache = CacheManager(fastest_mirrors=FastestMirrors(), cache_size=cache_size)
         cache.load(max_mirror_ping_time=max_mirror_ping_avg)
@@ -142,12 +146,16 @@ def choose_docker_image(image_type='mint'):
         docker_file_path = f"{docker_file_path}/{ARCH_PARSER}/Dockerfile"
         tag = ARCH_PARSER
 
+    logger.debug(f'The docker file path was {docker_file_path}, building a docker image of {tag}')
     return build_docker_file(path=docker_file_path, tag=tag)
 
 
 args = ArgParser().parse_args()
+logger.debug(f'Args which were received are:\n{args}')
 
 parser, scan_type = get_parser_and_scan_type(args=args)
+
+parser.parse_mirrors()
 
 if scan_type == FULL_SCAN:
     full_scan(parser=parser)

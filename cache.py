@@ -1,4 +1,9 @@
 import json
+from constants import *
+from logger import Logger
+
+logger = Logger(__name__)
+logger = logger.logger
 
 
 class CacheManager(object):
@@ -7,9 +12,6 @@ class CacheManager(object):
 
     Saves the data mirrors on the file as a json string.
     """
-
-    # class attributes
-    cache_file_name = 'cached_mirrors'
 
     def __init__(self, fastest_mirrors, cache_size=20):
         """
@@ -38,12 +40,13 @@ class CacheManager(object):
                 self._fastest_mirrors.sorted_mirrors.items(), range(self._cache_size)
             )
         }
+        logger.debug(f'Cached mirrors were set to {self._cache_mirrors}')
 
     def save(self):
         """
         Saves the best mirrors into the cache according to the cache size.
         """
-        with open(self.cache_file_name, 'w') as file:
+        with open(CACHED_MIRRORS_FILE_NAME, 'w') as file:
             file.write(json.dumps(self._cache_mirrors))
 
     def load(self, max_mirror_ping_time):
@@ -54,7 +57,7 @@ class CacheManager(object):
         Args:
             max_mirror_ping_time (float): indicate what is the maximum ping time for a mirror to be valid.
         """
-        with open(self.cache_file_name, 'r') as file:
+        with open(CACHED_MIRRORS_FILE_NAME, 'r') as file:
             self._cache_mirrors = json.load(file)
 
         valid_mirrors = {}
@@ -65,7 +68,6 @@ class CacheManager(object):
                 valid_mirrors[mirror] = avg_ping
 
         self._cache_mirrors = valid_mirrors
-
 
 # example to save & load.
 # cache = CacheManager(

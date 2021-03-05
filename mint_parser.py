@@ -1,7 +1,15 @@
 import urllib.request as request
 from shutil import copyfile
+
+from config import Config
+from logger import Logger
 from parser import Parser
 from bs4 import BeautifulSoup
+from constants import *
+
+logger = Logger(__name__)
+logger = logger.logger
+config = Config()
 
 
 class MintParser(Parser):
@@ -11,7 +19,8 @@ class MintParser(Parser):
     It also switches the default mirror to the fastest.
     """
 
-    def __init__(self, url, upstream_package_file_path='/etc/apt/sources.list.d/official-package-repositories.list'):
+    def __init__(self, url, upstream_package_file_path=config.get_default_value_of(MINT_SECTION,
+                                                                                   UPSTREAM_MIRRORS_LOCATION)):
         self._url = url
         self._upstream_package_file_path = upstream_package_file_path
 
@@ -29,11 +38,16 @@ class MintParser(Parser):
         list_of_objects = [html_object for html_object in list_of_objects if "http" in str(html_object) and
                            'a href' not in str(html_object)]
 
-        return [str(html_object).split('/')[2] for html_object in list_of_objects]
+        parsed_mirrors = [str(html_object).split('/')[2] for html_object in list_of_objects]
+        logger.debug(f'The mirrors we parsed are:\n{parsed_mirrors}')
+
+        return parsed_mirrors
 
     def switch_to_fastest_mirror(self, mirror):
         # Saving a backup of the configuration file
         copyfile(self._upstream_package_file_path, self._upstream_package_file_path + '.bak')
+        logger.debug('Original upstream file was at ' + self._upstream_package_file_path)
+        logger.debug('Upstream file was backed up at ' + self._upstream_package_file_path + '.bak')
 
         with open(self._upstream_package_file_path, 'r') as file:
             filedata = file.read()

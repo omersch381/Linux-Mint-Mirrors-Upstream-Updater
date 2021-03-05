@@ -3,12 +3,17 @@ import sys
 from arch_parser import ArchParser
 from config import Config
 from fedora_parser import FedoraParser
+from logger import Logger
 from mint_parser import MintParser
 from constants import *
+
+logger = Logger(__name__)
+logger = logger.logger
 
 
 def get_parser_from_config(config):
     if config[DEFAULT][OPERATING_SYSTEM] == FEDORA_PARSER:
+        logger.debug(f'Returning {FEDORA_PARSER} parser from ' + __name__)
         return FedoraParser()
 
     if config[DEFAULT][OPERATING_SYSTEM] == ARCH_PARSER:
@@ -21,22 +26,29 @@ def get_parser_from_config(config):
     mirrors_url = config[DEFAULT][MIRRORS_URL]
     upstream_mirrors_location = config[DEFAULT][UPSTREAM_MIRRORS_LOCATION]
 
+    logger.debug(f'Returning {parser} parser from ' + __name__ + f' with {mirrors_url} as the'
+                                                                 f' mirrors url and as {upstream_mirrors_location} '
+                                                                 f'as the upstream mirrors location')
     return parser(mirrors_url, upstream_mirrors_location)
 
 
 def get_parser_from_user(provided_parser, url, upstream_location):
-    if not url:  # Fedora
+    if 'None' in url:  # Fedora
+        logger.debug(f'Returning {provided_parser} parser from ' + __name__)
         return provided_parser()
     if upstream_location:  # if the user chooses a different mirror location
         parser = provided_parser(url, upstream_location)
     else:
         parser = provided_parser(url)
+
+    logger.debug(f'Returning {parser} parser from ' + __name__)
     return parser
 
 
 def exit_parser():
     print('Please insert a valid operation system which we support. For further details, please '
           'take a look at our README file.')
+    logger.debug('Exit with exit_parser')
     sys.exit()
 
 
@@ -68,6 +80,7 @@ def get_parser_and_scan_type(args):
             upstream_location = args.mirrors_location
         else:
             upstream_location = config.get_default_value_of(provided_section, UPSTREAM_MIRRORS_LOCATION)
+        logger.debug(f'Upstream location is {upstream_location}')
 
         parser = get_parser_from_user(provided_parser=provided_parser,
                                       url=config.get_default_value_of(provided_section, MIRRORS_URL),
@@ -78,4 +91,5 @@ def get_parser_and_scan_type(args):
         else:
             scan_type = FULL_SCAN
 
+        logger.debug(f'Scan type is {scan_type}')
         return parser, scan_type

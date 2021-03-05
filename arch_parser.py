@@ -3,7 +3,14 @@ from shutil import copyfile
 
 from bs4 import BeautifulSoup
 
+from config import Config
+from logger import Logger
 from parser import Parser
+from constants import *
+
+logger = Logger(__name__)
+logger = logger.logger
+config = Config()
 
 
 class ArchParser(Parser):
@@ -13,14 +20,20 @@ class ArchParser(Parser):
     It also switches the default mirror to the fastest.
     """
 
-    def __init__(self, url, upstream_package_file_path='/etc/pacman.d/mirrorlist'):
+    def __init__(self, url, upstream_package_file_path=config.get_default_value_of(ARCH_SECTION,
+                                                                                   UPSTREAM_MIRRORS_LOCATION)):
         self._url = url
         self._upstream_package_file_path = upstream_package_file_path
         self._raw_mirrors = None
+        self._list_of_mirrors = None
 
     @property
     def url(self):
         return self._url
+
+    @property
+    def list_of_mirrors(self):
+        return self._list_of_mirrors
 
     def parse_mirrors(self):
         html_content = request.urlopen(self._url)
@@ -29,11 +42,16 @@ class ArchParser(Parser):
 
         self._raw_mirrors = str(soup).splitlines()
 
-        return [line.split('/')[2] for line in self._raw_mirrors if '#Server' in line]
+        self._list_of_mirrors = [line.split('/')[2] for line in self._raw_mirrors if '#Server' in line]
+        logger.debug(f'The mirrors we parsed are:\n{self._list_of_mirrors}')
+
+        return self._list_of_mirrors
 
     def switch_to_fastest_mirror(self, mirror):
         # Saving a backup of the configuration file
         copyfile(self._upstream_package_file_path, self._upstream_package_file_path + '.bak')
+        logger.debug('Original upstream file was at ' + self._upstream_package_file_path)
+        logger.debug('Upstream file was backed up at ' + self._upstream_package_file_path + '.bak')
 
         abstract = """
 ################################################################################

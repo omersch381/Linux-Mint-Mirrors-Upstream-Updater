@@ -25,5 +25,6 @@ PINGING_TIME_MAX_LIMIT = 'pinging_time_max_limit'
 UPSTREAM_MIRRORS_LOCATION = 'upstream_mirrors_location'
 
 # File names:
+CACHED_MIRRORS_FILE_NAME = 'cached_mirrors'
 CONFING_FILE_NAME = 'config.ini'
 DEFAULT_VALUES_NAME = 'default_values.ini'
