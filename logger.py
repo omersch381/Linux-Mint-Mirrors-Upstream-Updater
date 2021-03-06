@@ -2,6 +2,9 @@ import logging
 
 
 class Logger:
+    """Handles logging.
+    """
+
     def __init__(self, class_name):
         self._logger = logging.getLogger(class_name)
         self._get_logger()

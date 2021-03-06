@@ -11,6 +11,12 @@ config = Config()
 
 
 class FedoraParser(Parser):
+    """This class handles the Fedora mirrors.
+
+    As Fedora has a flag, 'fastestmirror', which is already implemented, we simply use it.
+    We put that flag in the end of upstream mirrors file.
+    """
+
     def parse_mirrors(self):
         pass
 
@@ -18,6 +24,7 @@ class FedoraParser(Parser):
                                  mirror=None,
                                  upstream_package_file_path=config.get_default_value_of(FEDORA_SECTION,
                                                                                         UPSTREAM_MIRRORS_LOCATION)):
+
         # Saving a backup of the configuration file
         copyfile(upstream_package_file_path, upstream_package_file_path + '.bak')
         logger.debug('Original upstream file was at ' + upstream_package_file_path)

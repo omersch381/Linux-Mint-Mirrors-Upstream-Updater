@@ -36,6 +36,14 @@ class ArchParser(Parser):
         return self._list_of_mirrors
 
     def parse_mirrors(self):
+        """Gets the mirrors and parses them.
+
+        This method gets the Arch upstream mirrors with an http request and
+        parses the html into list of mirrors.
+
+        :returns (list): self._list_of_mirrors
+        """
+
         html_content = request.urlopen(self._url)
 
         soup = BeautifulSoup(html_content, 'html.parser')
@@ -48,6 +56,14 @@ class ArchParser(Parser):
         return self._list_of_mirrors
 
     def switch_to_fastest_mirror(self, mirror):
+        """Switches to fastest mirror.
+
+        This method gets the fastest mirror, backs up the upstream mirrors file and puts the
+        fastest mirror as the default mirror.
+
+        :param mirror: the fastest mirror which was returned from our pinger.
+        """
+
         # Saving a backup of the configuration file
         copyfile(self._upstream_package_file_path, self._upstream_package_file_path + '.bak')
         logger.debug('Original upstream file was at ' + self._upstream_package_file_path)

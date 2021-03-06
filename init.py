@@ -12,6 +12,15 @@ logger = logger.logger
 
 
 def get_parser_from_config(config):
+    """Gets the parser from the config file.
+
+    :param config: the user's configuration preferences.
+
+    :returns parser: a pointer to the required parser with its parameters:
+            mirrors_url - the url which we will get the upstream mirrors from.
+            upstream_mirrors_location - the path of the upstream mirrors file.
+    """
+
     if config[DEFAULT][OPERATING_SYSTEM] == FEDORA_PARSER:
         logger.debug(f'Returning {FEDORA_PARSER} parser from ' + __name__)
         return FedoraParser()
@@ -32,7 +41,21 @@ def get_parser_from_config(config):
     return parser(mirrors_url, upstream_mirrors_location)
 
 
-def get_parser_from_user(provided_parser, url, upstream_location):
+def get_parser_from_cli(provided_parser, url, upstream_location):
+    """Gets the parser from the command line.
+
+    This function gets the parser by the command the user have entered.
+
+    :param provided_parser: the parser the user chose.
+    :param url: the default url for the upstream mirrors (being
+        taken from the default values file)
+    :param upstream_location: the upstream mirrors file path. Might be
+        taken from the default values file or overridden by the user.
+    :returns parser/provided_parser: the parser the user chose.
+
+    Ex for a cli command: python mirrors_manager.py --parser arch --mirrors_location PATH
+    """
+
     if 'None' in url:  # Fedora
         logger.debug(f'Returning {provided_parser} parser from ' + __name__)
         return provided_parser()
@@ -53,6 +76,17 @@ def exit_parser():
 
 
 def get_parser_and_scan_type(args):
+    """Gets parser and scan type.
+
+    This function get the parser by either the config file (if flag "-c" or
+    "--config" specified), or by the cli command.
+    A supported parser has to be specified in at least one of the options.
+
+    :param args: the arguments the user have entered in the command line.
+    :returns parser, scan_type: the parser the user has chosen and the scan_type.
+        If the user didn't choose daily_scan explicitly, it returns a full_scan.
+    """
+
     config = Config()
 
     if args.config:
@@ -82,9 +116,9 @@ def get_parser_and_scan_type(args):
             upstream_location = config.get_default_value_of(provided_section, UPSTREAM_MIRRORS_LOCATION)
         logger.debug(f'Upstream location is {upstream_location}')
 
-        parser = get_parser_from_user(provided_parser=provided_parser,
-                                      url=config.get_default_value_of(provided_section, MIRRORS_URL),
-                                      upstream_location=upstream_location)
+        parser = get_parser_from_cli(provided_parser=provided_parser,
+                                     url=config.get_default_value_of(provided_section, MIRRORS_URL),
+                                     upstream_location=upstream_location)
 
         if args.scan_type and args.scan_type.lower() in ['daily_scan', 'daily scan']:
             scan_type = DAILY_SCAN

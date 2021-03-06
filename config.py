@@ -17,6 +17,19 @@ class Config:
         return self._config
 
     def start_config(self):
+        """Configures mirror_manager.
+
+        This method configures mirror_manager by the user preferences.
+        It aims to do some validity checks to some args, though not to all of them.
+
+        It lets the user pick one of 2 options:
+                full_config: let the user configure all their preferences by themselves
+                mandatory_config: let the user configure only what is crucial and picks
+                                  the rest of the configs from the default_values file.
+
+        Eventually it writes the configs to the config file.
+        """
+
         config_type = input('Welcome to Mirrors Manager!\nWould you like to'
                             ' configure all preferences or just the mandatory ones? '
                             '[f/full/m/mandatory/e/exit]\n')
@@ -30,9 +43,9 @@ class Config:
             is_valid = config_type.lower() in ['f', 'full', 'm', 'mandatory', 'e', 'exit']
 
         if config_type.lower() in ['full', 'f']:
-            self.full_config()
+            self._full_config()
         elif config_type.lower() in ['mandatory', 'm']:
-            self.mandatory_config()
+            self._mandatory_config()
         else:
             sys.exit()
 
@@ -73,18 +86,7 @@ class Config:
 
         self._config[DEFAULT][FULL_SCAN_FREQUENCY] = full_scans_frequency
 
-    def full_config(self):
-        self.mandatory_config()
-
-        self._handle_cache_size()
-
-        self._handle_pinging_time_max_limit()
-
-        self._handle_full_scans_frequency()
-
-    def mandatory_config(self):
-        print('\nWe are going to ask you about some preferences regarding mirror managing.')
-        print('For further details, please take a look at our README file.\n')
+    def _handle_operating_system(self):
         operating_system = input('What Operating System do you use?\n'
                                  'We support [' + '/'.join(ALL_PARSERS) + '/e/exit]\n')
         operating_system = self._check_operating_system(operating_system)
@@ -92,6 +94,42 @@ class Config:
             sys.exit()
 
         self._config[DEFAULT][OPERATING_SYSTEM] = operating_system
+        return operating_system
+
+    def _handle_mirrors_default_location(self, os_section):
+        mirrors_default_location = input('\nWould you like to change the default value of '
+                                         'your upstream mirrors file location? [y/yes/n/no]\n')
+        if mirrors_default_location.lower() in ['y', 'yes']:
+            mirrors_default_location = input('Please enter an absolute path for your '
+                                             'upstream mirrors file location:\n')
+        else:
+            mirrors_default_location = self._default_values[os_section][UPSTREAM_MIRRORS_LOCATION]
+
+        return mirrors_default_location
+
+    def _full_config(self):
+        """Configures all the possible parameters/configs of mirrors_manager.
+        """
+
+        self._mandatory_config()
+
+        self._handle_cache_size()
+
+        self._handle_pinging_time_max_limit()
+
+        self._handle_full_scans_frequency()
+
+    def _mandatory_config(self):
+        """Configures only the crucial configurations.
+
+        The rest of the configs will be configured as the default_values file
+        suggests.
+        """
+
+        print('\nWe are going to ask you about some preferences regarding mirror managing.')
+        print('For further details, please take a look at our README file.\n')
+
+        operating_system = self._handle_operating_system()
 
         # set mirrors_default_location and mirrors_url
         if operating_system.lower() == ARCH_PARSER:
@@ -101,14 +139,7 @@ class Config:
         else:  # Mint
             os_section = MINT_SECTION
 
-        mirrors_default_location = input('\nWould you like to change the default value of '
-                                         'your upstream mirrors file location? [y/yes/n/no]\n')
-        if mirrors_default_location.lower() in ['y', 'yes']:
-            mirrors_default_location = input('Please enter an absolute path for your '
-                                             'upstream mirrors file location:\n')
-        else:
-            mirrors_default_location = self._default_values[os_section][UPSTREAM_MIRRORS_LOCATION]
-
+        mirrors_default_location = self._handle_mirrors_default_location(os_section)
         mirrors_url = self._default_values[os_section][MIRRORS_URL]
 
         self._config[DEFAULT][UPSTREAM_MIRRORS_LOCATION] = mirrors_default_location
