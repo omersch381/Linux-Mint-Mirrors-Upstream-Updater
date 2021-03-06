@@ -64,7 +64,7 @@ def get_parser_from_cli(provided_parser, url, upstream_location):
     else:
         parser = provided_parser(url)
 
-    logger.debug(f'Returning {parser} parser from ' + __name__)
+    logger.debug('Returning {parser_name} parser from ' + __name__.format(parser_name=parser.name))
     return parser
 
 
@@ -89,22 +89,23 @@ def get_parser_and_scan_type(args):
 
     config = Config()
 
-    if args.config:
+    if args.config or config.all_configurations_are_valid() is False:
         config.start_config()
         parser = get_parser_from_config(config.config)
-        return parser, FULL_SCAN
+        scan_type = FULL_SCAN if parser in PARSERS_WHICH_NOT_REQUIRE_PING is False else None
+        return parser, scan_type
 
-    else:  # We get the parser from the user
-        if not args.parser:
-            exit_parser()
+    else:
+        # Parser handling - we get the parser from the user
+        parser = get_parser_from_config(config.config) if not args.parser else args.parser
 
-        if args.parser.lower() == MINT_PARSER:
+        if parser.name == MINT_PARSER:
             provided_parser = MintParser
             provided_section = MINT_SECTION
-        elif args.parser.lower() == ARCH_PARSER:
+        elif parser.name == ARCH_PARSER:
             provided_parser = ArchParser
             provided_section = ARCH_SECTION
-        elif args.parser.lower() == FEDORA_PARSER:
+        elif parser.name == FEDORA_PARSER:
             provided_parser = FedoraParser
             provided_section = FEDORA_SECTION
         else:
@@ -114,16 +115,26 @@ def get_parser_and_scan_type(args):
             upstream_location = args.mirrors_location
         else:
             upstream_location = config.get_default_value_of(provided_section, UPSTREAM_MIRRORS_LOCATION)
-        logger.debug(f'Upstream location is {upstream_location}')
+        logger.debug(f'Upstream mirrors location is {upstream_location}')
 
         parser = get_parser_from_cli(provided_parser=provided_parser,
                                      url=config.get_default_value_of(provided_section, MIRRORS_URL),
                                      upstream_location=upstream_location)
 
-        if args.scan_type and args.scan_type.lower() in ['daily_scan', 'daily scan']:
+        # Scan type handling
+        scan_type = None
+        if args.scan_type:  # If the user provided an explicit scan_type param
+            scan_type = DAILY_SCAN if args.scan_type.lower() in ['daily_scan', 'daily scan'] else FULL_SCAN
+
+        else:  # If they didn't provide an explicit scan_type param
+            full_scan_frequency = config.get_config_of(DEFAULT, FULL_SCAN_FREQUENCY)
+            num_of_runs_since_full_scan = config.get_config_of(DEFAULT, NUM_OF_RUNS_SINCE_FULL_SCAN)
+
+            if int(num_of_runs_since_full_scan) >= int(full_scan_frequency):
+                scan_type = FULL_SCAN
+
+        if not scan_type and parser in PARSERS_WHICH_NOT_REQUIRE_PING is False:
             scan_type = DAILY_SCAN
-        else:
-            scan_type = FULL_SCAN
 
         logger.debug(f'Scan type is {scan_type}')
         return parser, scan_type

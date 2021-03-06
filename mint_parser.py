@@ -28,6 +28,10 @@ class MintParser(Parser):
     def url(self):
         return self._url
 
+    @property
+    def name(self):
+        return MINT_PARSER
+
     def parse_mirrors(self):
         """Gets the mirrors and parses them.
 

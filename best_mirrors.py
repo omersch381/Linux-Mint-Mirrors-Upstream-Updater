@@ -57,4 +57,4 @@ class FastestMirrors(object):
                 mirrors_ping_average, key=mirrors_ping_average.get
             )
         }
-        logger.debug(f'Sorted mirrors are:\n{self._sorted_mirrors}')
+        logger.debug(f'Sorted mirrors with their pinging times are:\n{self._sorted_mirrors}')

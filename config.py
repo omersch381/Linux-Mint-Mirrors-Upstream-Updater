@@ -1,5 +1,6 @@
 import configparser
 import sys
+import os.path
 from constants import *
 
 
@@ -8,7 +9,7 @@ class Config:
     """
 
     def __init__(self):
-        self._config_file_name = CONFING_FILE_NAME
+        self._config_file_name = CONFIG_FILE_NAME
         self._config = configparser.ConfigParser()
         self._default_values = self.load_default_values()
 
@@ -48,6 +49,8 @@ class Config:
             self._mandatory_config()
         else:
             sys.exit()
+
+        self._config[DEFAULT][NUM_OF_RUNS_SINCE_FULL_SCAN] = '0'
 
         with open(self._config_file_name, 'w') as configfile:
             self._config.write(configfile)
@@ -154,15 +157,24 @@ class Config:
 
     def load_config(self):
         self._config.read(self._config_file_name)
-        if not self._all_configurations_are_valid() > 0:
-            print('We noticed that some of the configurations are invalid.\n'
-                  'Please reconfigure.')
-            self.start_config()
-            self._config.read(self._config_file_name)
 
-    def _all_configurations_are_valid(self):
-        # TODO oschwart: implement this method
-        raise NotImplementedError
+    def all_configurations_are_valid(self):
+        if not os.path.isfile(self._config_file_name):
+            return False
+        self.load_config()
+        try:
+            is_os = self._config[DEFAULT][OPERATING_SYSTEM]
+            is_upstream_mirrors_location = self._config[DEFAULT][UPSTREAM_MIRRORS_LOCATION]
+            is_mirrors_url = self._config[DEFAULT][MIRRORS_URL]
+            is_full_scans_frequency = self._config[DEFAULT][FULL_SCAN_FREQUENCY]
+            is_cache_size = self._config[CACHE][CACHE_SIZE]
+            is_pinging_time_max_limit = self._config[BLACKLIST][PINGING_TIME_MAX_LIMIT]
+            is_num_of_runs_since_full_scan = self._config[DEFAULT][NUM_OF_RUNS_SINCE_FULL_SCAN]
+            return True
+        except KeyError as e:
+            print(e)
+            print('We noticed that not all configurations are valid. Let\'s configure them now:')
+            return False
 
     def load_default_values(self):
         self._default_values = configparser.ConfigParser()
@@ -171,3 +183,14 @@ class Config:
 
     def get_default_value_of(self, section, field):
         return self._default_values[section][field]
+
+    def get_config_of(self, section, field):
+        self.load_config()
+        return self._config[section][field]
+
+    def change_config_value(self, section, field, value):
+        self._config.set(section, field, value)
+
+        # Writing our configuration file to 'example.ini'
+        with open(self._config_file_name, 'w') as configfile:
+            self._config.write(configfile)

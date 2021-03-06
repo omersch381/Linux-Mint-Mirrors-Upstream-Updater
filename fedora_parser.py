@@ -20,6 +20,10 @@ class FedoraParser(Parser):
     def parse_mirrors(self):
         pass
 
+    @property
+    def name(self):
+        return FEDORA_PARSER
+
     def switch_to_fastest_mirror(self,
                                  mirror=None,
                                  upstream_package_file_path=config.get_default_value_of(FEDORA_SECTION,

@@ -37,7 +37,7 @@ class CacheManager(object):
         """
         self._cache_mirrors = {
             mirror: time for (mirror, time), _ in zip(
-                self._fastest_mirrors.sorted_mirrors.items(), range(self._cache_size)
+                self._fastest_mirrors.sorted_mirrors.items(), range(int(self._cache_size))
             )
         }
         logger.debug(f'Cached mirrors were set to {self._cache_mirrors}')

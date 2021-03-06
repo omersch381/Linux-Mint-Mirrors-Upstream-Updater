@@ -35,6 +35,10 @@ class ArchParser(Parser):
     def list_of_mirrors(self):
         return self._list_of_mirrors
 
+    @property
+    def name(self):
+        return ARCH_PARSER
+
     def parse_mirrors(self):
         """Gets the mirrors and parses them.
 

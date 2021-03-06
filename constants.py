@@ -20,11 +20,16 @@ MINT_SECTION = 'Mint'
 CACHE_SIZE = 'cache_size'
 FULL_SCAN_FREQUENCY = 'full_scans_frequency'
 MIRRORS_URL = 'mirrors_url'
+NUM_OF_RUNS_SINCE_FULL_SCAN = 'num_of_runs_since_full_scan'
 OPERATING_SYSTEM = 'operating_system'
 PINGING_TIME_MAX_LIMIT = 'pinging_time_max_limit'
 UPSTREAM_MIRRORS_LOCATION = 'upstream_mirrors_location'
 
 # File names:
 CACHED_MIRRORS_FILE_NAME = 'cached_mirrors'
-CONFING_FILE_NAME = 'config.ini'
+CONFIG_FILE_NAME = 'config.ini'
 DEFAULT_VALUES_NAME = 'default_values.ini'
+MIRRORS_FILE_NAME = 'mirrors_list'
+
+# Other:
+PARSERS_WHICH_NOT_REQUIRE_PING = [FEDORA_PARSER]
