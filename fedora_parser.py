@@ -37,7 +37,7 @@ class FedoraParser(Parser):
         was_fastest_mirror_option_added = False
         with open(upstream_package_file_path, 'r') as file:
             content = file.readlines()
-            if 'fastestmirror' in content:
+            if any('fastestmirror' in item for item in content):
                 was_fastest_mirror_option_added = True
 
         if not was_fastest_mirror_option_added:

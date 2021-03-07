@@ -92,7 +92,7 @@ def get_parser_and_scan_type(args):
     if args.config or config.all_configurations_are_valid() is False:
         config.start_config()
         parser = get_parser_from_config(config.config)
-        scan_type = FULL_SCAN if parser in PARSERS_WHICH_NOT_REQUIRE_PING is False else None
+        scan_type = FULL_SCAN if parser.name not in PARSERS_WHICH_NOT_REQUIRE_PING else None
         return parser, scan_type
 
     else:
@@ -132,8 +132,9 @@ def get_parser_and_scan_type(args):
 
             if int(num_of_runs_since_full_scan) >= int(full_scan_frequency):
                 scan_type = FULL_SCAN
+                config.change_config_value(DEFAULT, NUM_OF_RUNS_SINCE_FULL_SCAN, "0")
 
-        if not scan_type and parser in PARSERS_WHICH_NOT_REQUIRE_PING is False:
+        if not scan_type and parser.name not in PARSERS_WHICH_NOT_REQUIRE_PING:
             scan_type = DAILY_SCAN
 
         logger.debug(f'Scan type is {scan_type}')

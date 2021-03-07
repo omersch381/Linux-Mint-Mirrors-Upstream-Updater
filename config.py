@@ -55,8 +55,6 @@ class Config:
         with open(self._config_file_name, 'w') as configfile:
             self._config.write(configfile)
 
-        print('\nLet\'s start pinging....')
-
     def _handle_cache_size(self):
         cache_size = input('\nWhat should be your cache size? (the number of mirrors '
                            'to be saved in the cache file) [Integer]\n'
@@ -172,7 +170,6 @@ class Config:
             is_num_of_runs_since_full_scan = self._config[DEFAULT][NUM_OF_RUNS_SINCE_FULL_SCAN]
             return True
         except KeyError as e:
-            print(e)
             print('We noticed that not all configurations are valid. Let\'s configure them now:')
             return False
 

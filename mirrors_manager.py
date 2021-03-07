@@ -35,8 +35,10 @@ class MirrorsManager:
             self.full_scan(default_cache_size)
         elif self._scan_type == DAILY_SCAN:
             self.daily_scan(default_cache_size)
+        elif not self._scan_type:
+            self._parser.switch_to_fastest_mirror()  # others, such as None
         else:
-            pass
+            raise RuntimeError('Invalid scan type, exiting...')
 
         num_of_runs_since_full_scan = self._config.get_config_of(DEFAULT, NUM_OF_RUNS_SINCE_FULL_SCAN)
         next_num_of_runs = int(num_of_runs_since_full_scan) + 1
