@@ -18,6 +18,8 @@ MINT_SECTION = 'Mint'
 
 # Config.ini fields:
 CACHE_SIZE = 'cache_size'
+CRONTAB = 'crontab'
+CRONTAB_SCHEDULE = 'crontab_schedule'
 FULL_SCAN_FREQUENCY = 'full_scans_frequency'
 MIRRORS_URL = 'mirrors_url'
 NUM_OF_RUNS_SINCE_FULL_SCAN = 'num_of_runs_since_full_scan'

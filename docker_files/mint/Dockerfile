@@ -5,10 +5,10 @@ WORKDIR /mirrors_project
 
 RUN apt-get update -y
 
-RUN sudo apt-get install -y python3.6 vim
+RUN sudo apt-get install -y python3.6 vim cron
 RUN sudo apt install -y python3-pip
 
 RUN pip3 install setuptools
-RUN pip3 install bs4 configparser pythonping argparse docker
+RUN pip3 install bs4 configparser pythonping argparse docker python-crontab
 
 #RUN python3 mirrors_manager.py --parser mint

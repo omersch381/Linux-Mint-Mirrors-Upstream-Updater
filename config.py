@@ -1,5 +1,6 @@
 import configparser
 import sys
+from crontab import CronTab
 import os.path
 from constants import *
 
@@ -108,6 +109,33 @@ class Config:
 
         return mirrors_default_location
 
+    def _handle_crontab(self):
+        crontab_msg = input('\nWould you like to configure the full scan in cron-tab? [y/yes/n/no]\n')
+        crontab_cmd = f"python {os.path.abspath(os.getcwd())}/main.py"
+        if crontab_msg.lower() in ['y', 'yes']:
+            schedule = input('\nPlease enter cron-tab pattern for example [2 10 * * *]\n')
+
+            crontab = CronTab(user=True)
+            job = crontab.new(command=crontab_cmd)
+
+            is_valid_pattern = False
+            while not is_valid_pattern:
+                try:
+                    job.setall(schedule)
+                    crontab.write()
+                    is_valid_pattern = True
+                except Exception:  # means that the cron-tab pattern provided is not valid!
+                    schedule = input('\nPlease enter a valid cron-tab pattern! for example [2 10 * * *]\n')
+
+            self._config[CRONTAB] = {}
+            self._config[CRONTAB][CRONTAB_SCHEDULE] = schedule
+        else:
+            crontab_msg = input('\nWould you like to be shown the command to put in your cron-tab? [y/yes/n/no]\n')
+            if crontab_msg.lower() in ['y', 'yes']:
+                print(f"command to cron-tab: {crontab_cmd}")
+
+        # if none of them is used then the default just sets to do nothing
+
     def _full_config(self):
         """Configures all the possible parameters/configs of mirrors_manager.
         """
@@ -119,6 +147,8 @@ class Config:
         self._handle_pinging_time_max_limit()
 
         self._handle_full_scans_frequency()
+
+        self._handle_crontab()
 
     def _mandatory_config(self):
         """Configures only the crucial configurations.
