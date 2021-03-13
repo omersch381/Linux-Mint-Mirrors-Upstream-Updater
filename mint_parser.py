@@ -23,6 +23,7 @@ class MintParser(Parser):
                                                                                    UPSTREAM_MIRRORS_LOCATION)):
         self._url = url
         self._upstream_package_file_path = upstream_package_file_path
+        self._list_of_mirrors = None
 
     @property
     def url(self):
@@ -31,6 +32,10 @@ class MintParser(Parser):
     @property
     def name(self):
         return MINT_PARSER
+
+    @property
+    def list_of_mirrors(self):
+        return self._list_of_mirrors
 
     def parse_mirrors(self):
         """Gets the mirrors and parses them.
@@ -50,10 +55,10 @@ class MintParser(Parser):
         list_of_objects = [html_object for html_object in list_of_objects if "http" in str(html_object) and
                            'a href' not in str(html_object)]
 
-        parsed_mirrors = [str(html_object).split('/')[2] for html_object in list_of_objects]
-        logger.debug(f'The mirrors we parsed are:\n{parsed_mirrors}')
+        self._list_of_mirrors = [str(html_object).split('/')[2] for html_object in list_of_objects]
+        logger.debug(f'The mirrors we parsed are:\n{self._list_of_mirrors}')
 
-        return parsed_mirrors
+        return self._list_of_mirrors
 
     def switch_to_fastest_mirror(self, mirror):
         """Switches to fastest mirror.
