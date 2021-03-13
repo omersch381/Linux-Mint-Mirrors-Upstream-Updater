@@ -63,7 +63,7 @@ class CacheManager(object):
         valid_mirrors = {}
         self._fastest_mirrors.sort_mirrors_by_ping_avg(mirrors=[mirror for mirror in self._cache_mirrors.keys()])
 
-        for mirror, avg_ping in self._fastest_mirrors.sorted_mirrors:
+        for mirror, avg_ping in self._fastest_mirrors.sorted_mirrors.items():
             if avg_ping <= max_mirror_ping_time:
                 valid_mirrors[mirror] = avg_ping
 
