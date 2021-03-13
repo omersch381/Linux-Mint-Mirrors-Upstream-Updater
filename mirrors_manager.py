@@ -104,15 +104,15 @@ class MirrorsManager:
 
         logger.debug('full scan')
         if hasattr(self._parser, 'list_of_mirrors'):
-            list_of_mirrors = self._parser.list_of_mirrors
-        # logger.debug('list of mirrors:\n' + list_of_mirrors)
-        # TODO oschwart: after testing we should comment the next line and uncomment the previous one
-        example_for_testing = ['mirrors.evowise.com']
+            list_of_mirrors = list(set(self._parser.list_of_mirrors))
+            logger.debug('list of mirrors:\n' + ', '.join(list_of_mirrors))
+            example_for_testing = ['mirrors.evowise.com']
 
-        self._run_daily(example_for_testing, cache_size=cache_size)
+        # self._run_daily(example_for_testing, cache_size=cache_size)
+        self._run_daily(list_of_mirrors, cache_size=cache_size)
 
         if hasattr(self._parser, 'list_of_mirrors'):
-            self._write_mirrors_list_to_file(example_for_testing)
+            self._write_mirrors_list_to_file(list_of_mirrors)
         # or
         # if list_of_mirrors:
         #     self._write_mirrors_list_to_file(list_of_mirrors)
